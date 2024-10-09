@@ -2,7 +2,7 @@ from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
 from sudoku import Sudoku as pysudoku
 from sudoku_py import SudokuGenerator as sudokupy
-from python_package.exact_cover_circ import ExactCoverQuantumSolver
+from python_package.quantum import ExactCoverQuantumSolver
 import os
 import csv
 
@@ -15,13 +15,15 @@ class Sudoku():
         self.num_missing_cells = num_missing_cells
         self.file_path = file_path
         
-        # Optionally use py-sudoku or sudoku-py
+        # Optionally use 
+        #   py-sudoku: allows to generate puzzles from a seed.
+        #   sudoku-py: allows to generate puzzles by number of blank cells.
         if pysudo is True:
             self.puzzle = pysudoku(self.grid_size,seed=seed).difficulty(self.difficulty)
             # print(self.puzzle.board)
         if sudopy is True:
             puzzle = sudokupy(board_size=self.board_size)
-            cells_to_remove = round(self.num_missing_cells,0)
+            cells_to_remove = self.num_missing_cells
             puzzle.generate(cells_to_remove=cells_to_remove)
             puzzle.board_exchange_values({'a': 1, 'b': 2, 'c': 3, 'd': 4, 'e': 5, 'f': 6, 'g': 7, 'h': 8, 'i': 9})
             self.puzzle = puzzle
@@ -29,7 +31,14 @@ class Sudoku():
 
         self.open_tuples = self.find_open_tuples()
         self.pre_tuples = self.find_preset_tuples()
+    
+    def custom_board(self,board):
+        self.puzzle.board = board
         
+    def _init_quantum(self,simple=True,pattern=False):
+        self.quantum = ExactCoverQuantumSolver(self,simple=simple,pattern=pattern)
+
+    
     def find_preset_tuples(self):
         preset_tuples = []
         for i in range(self.grid_size*self.grid_size):  # Loop over each row
@@ -68,9 +77,6 @@ class Sudoku():
                         open_tuples.append((i, j, digit))
         return open_tuples
             
-    def _init_quantum(self,simple=True,pattern=False):
-        self.quantum = ExactCoverQuantumSolver(self,simple=simple,pattern=pattern)
-
     def puzzle_to_csv(self):
         # Ensure the directory exists
         directory = os.path.dirname(self.file_path)

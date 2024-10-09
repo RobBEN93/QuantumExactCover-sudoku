@@ -1,6 +1,6 @@
 from collections import defaultdict
 from python_package.pattern_generation import Pattern_generation
-# The `ExactCoverEncoding` class generates constraints for an exact cover problem based on open tuples
+# The `ExactCoverEncoding` class generates constraints for an exact cover problem based on open tuples for any given sudoku puzzle
 
 class ExactCoverEncoding:
     def __init__(self, sudoku):
