@@ -31,6 +31,7 @@ class Sudoku():
 
         self.open_tuples = self.find_open_tuples()
         self.pre_tuples = self.find_preset_tuples()
+        self._init_quantum()
     
     def custom_board(self,board):
         self.puzzle.board = board
