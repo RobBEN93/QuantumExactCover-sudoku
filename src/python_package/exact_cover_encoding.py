@@ -1,5 +1,5 @@
 from collections import defaultdict
-from python_package.pattern_generation import Pattern_generation
+from python_package.pattern_generation import PatternGeneration
 # The `ExactCoverEncoding` class generates constraints for an exact cover problem based on open tuples for any given sudoku puzzle
 
 class ExactCoverEncoding:
@@ -9,7 +9,7 @@ class ExactCoverEncoding:
         self.set_tuples = sudoku.pre_tuples
         
         self.simple_subsets = self.gen_simple_subsets()
-        possible_patterns = Pattern_generation(sudoku=sudoku)
+        possible_patterns = PatternGeneration(sudoku=sudoku)
         self.pattern_subsets = self.gen_patterns_subsets(possible_patterns=possible_patterns.patterns,fixed_tuples=self.set_tuples)
         
         if self.size >= 2:    
@@ -19,7 +19,6 @@ class ExactCoverEncoding:
             self.universe2x2 = []
             self.gen_universe2x2()
             
-        
     # Constraint generation for Universe
     
     def _cell_const(self):

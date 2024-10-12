@@ -181,6 +181,9 @@ class ExactCoverQuantumSolver:
         self._assemble_full_circuit_w_meas()
         return self.main_circuit
     
+    def draw_circuit(self):
+        draw(self.main_circuit)    
+        
     def aer_simulation(self,shots=1024):
         """
         Simulates the circuit using AerBackend from pytket.
@@ -209,10 +212,7 @@ class ExactCoverQuantumSolver:
         self.sim_counts = backend.get_result(handle).get_counts()
         
         return self.sim_counts
-    
-    def draw_circuit(self):
-        draw(self.main_circuit)    
-    
+
     def counts_plot(self,counts = None):
         """
         Plots the probabilities of the measured states.

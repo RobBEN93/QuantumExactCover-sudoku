@@ -2,7 +2,7 @@ from collections import defaultdict
 import copy
 from copy import deepcopy
 
-class Pattern_generation:
+class PatternGeneration:
     def __init__(self,sudoku) -> None:
         self.open_tuples = sudoku.open_tuples
         self.fixed_tuples = sudoku.pre_tuples

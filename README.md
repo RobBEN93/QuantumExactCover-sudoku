@@ -261,10 +261,13 @@ The existing quantum hardware is still in its early stages, and its limitations 
 
 To address the current limitations and enhance the functionality of the Sudoku Quantum Solver, the following areas are proposed for future development:
 
+- Add more sudoku-solving quantum algorithms.
+
 - Improved Encoding Methods:
 Develop more efficient encoding schemes to reduce the number of required qubits and gates.
 Explore hybrid encoding strategies that combine the strengths of both Encoding Type A and B.
 
+# Possible directions
 
 - Quantum Circuit Optimization:
 Implement advanced optimization techniques to minimize circuit depth and gate count.
@@ -277,17 +280,13 @@ Scalability Enhancements:
 
 - Adapt the solver to handle larger Sudoku puzzles or other constraint satisfaction problems.
 Investigate parallelization and distributed computing approaches to manage computational loads.
+
 - User Interface Development:
 
 Create a user-friendly interface or dashboard for easier interaction with the solver and visualization of results.
 Develop web-based tools to allow users to input puzzles and view solutions without deep technical knowledge.
 
-- Comprehensive Documentation and Tutorials:
-
-Expand the documentation to include detailed tutorials, examples, and best practices.
-Provide educational resources to help users understand the quantum computing principles behind the solver.
-
-Community Engagement:
+Community Engagement 
 
 Encourage community contributions by setting up collaborative platforms, such as discussion forums or contribution guidelines.
 Host workshops or webinars to demonstrate the solver and gather feedback from users.

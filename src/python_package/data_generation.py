@@ -15,11 +15,16 @@ import plotly.graph_objects as go
 
 warnings.filterwarnings('ignore')
 
-from python_package.Sudoku import Sudoku
+from python_package.sudoku import Sudoku
 from python_package.quantum import ExactCoverQuantumSolver
 
-# Set up logging configuration
-logging.basicConfig(level=logging.INFO)
+# Set up logging to a file
+logging.basicConfig(
+    filename='app.log',          # Log file name
+    filemode='a',                 # Append mode ('w' for overwrite)
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'  # Optional: Add timestamps
+    )
 logger = logging.getLogger(__name__)
 
 # SQLAlchemy base class for model definition
@@ -30,11 +35,14 @@ class QuantumResources(Base):
     __tablename__ = 'quantum_resources'
 
     id = Column(Integer, primary_key=True)
+    
     missing_cells = Column(Integer)
-    num_qubits_sim = Column(Integer)
+    
+    num_qubits_simple_encoding = Column(Integer)
     total_gates_simple_encoding = Column(Integer)
     mcx_gates_simple_encoding = Column(Integer)
-    num_qubits_pat = Column(Integer)
+    
+    num_qubits_pattern_encoding = Column(Integer)
     total_gates_pattern_encoding = Column(Integer)
     mcx_gates_pattern_encoding = Column(Integer)
 
@@ -56,6 +64,81 @@ class GenData:
         else:
             self.engine = None
 
+    def find_quantum_resources(self, sudoku: Sudoku):
+        """
+        Compute quantum resources required for solving a Sudoku puzzle using simple and pattern encodings.
+        
+        Parameters:
+        - sudoku: A Sudoku instance representing the puzzle to be solved.
+        
+        Returns:
+        - A tuple containing quantum resource data for both encodings (simple and pattern).
+        """
+        # Compute quantum resources for simple encoding
+        circ = ExactCoverQuantumSolver(sudoku, simple=True, pattern=False)
+        sim_num_qubits, sim_total_gates, sim_mcx_gates = circ.find_resources()
+        # Compute quantum resources for pattern encoding
+        circ = ExactCoverQuantumSolver(sudoku, simple=False, pattern=True)
+        pat_num_qubits, pat_total_gates, pat_mcx_gates = circ.find_resources()
+        return sim_num_qubits, sim_total_gates, sim_mcx_gates, pat_num_qubits, pat_total_gates, pat_mcx_gates
+
+    def generate_data(self, num_empty_cells: int = None, num_cells_range: tuple = (1, 8)) -> pd.DataFrame:
+        """
+        Generate Sudoku puzzles and compute quantum resources for each puzzle.
+        
+        Parameters:
+        - num_empty_cells: Specific number of missing cells to generate puzzles with (optional).
+        - num_cells_range: Tuple specifying a range of missing cells if num_empty_cells is not provided.
+        
+        Returns:
+        - A DataFrame containing the quantum resource data for the generated puzzles.
+        """
+        if num_empty_cells is not None:
+            if not isinstance(num_empty_cells, int) or num_empty_cells < 0:
+                raise ValueError("num_empty_cells must be a non-negative integer.")
+        if not (isinstance(num_cells_range, tuple) and len(num_cells_range) == 2):
+            raise ValueError("num_cells_range must be a tuple of two integers.")
+
+        if num_empty_cells is None:
+            # Loop over a range of missing cells if num_empty_cells is not specified
+            for i in range(num_cells_range[0], num_cells_range[1] + 1):
+                for _ in tqdm(range(self.num_puzzles), desc=f"Generating puzzles with {i} missing cells"):
+                    sudoku = Sudoku(grid_size=self.size, num_missing_cells=i)
+                    self._append_quantum_resources(sudoku)
+        else:
+            # Generate data for a specific number of missing cells
+            for _ in tqdm(range(self.num_puzzles), desc=f"Generating puzzles with {num_empty_cells} missing cells"):
+                sudoku = Sudoku(grid_size=self.size, num_missing_cells=num_empty_cells)
+                self._append_quantum_resources(sudoku)
+
+        return pd.DataFrame(self.data_list)
+
+    def insert_into_sql(self) -> None:
+        """
+        Insert the data into the 'quantum_resources' table in the database.
+        """
+        if self.engine is None:
+            raise ValueError("Database engine is not set. Please provide a valid db_url when initializing GenData.")
+        try:
+            # Ensure the table exists
+            self._create_table_if_not_exists()
+            # Convert data list to DataFrame
+            df = pd.DataFrame(self.data_list)
+            # Define data types for the DataFrame columns
+            dtype = {
+                'missing_cells': Integer(),
+                'num_qubits_simple_encoding': Integer(),
+                'total_gates_simple_encoding': Integer(),
+                'mcx_gates_simple_encoding': Integer(),
+                'num_qubits_pattern_encoding': Integer(),
+                'total_gates_pattern_encoding': Integer(),
+                'mcx_gates_pattern_encoding': Integer(),
+            }
+            # Insert data into the SQL table
+            df.to_sql('quantum_resources', self.engine, if_exists='append', index=False, dtype=dtype, method='multi')
+        except Exception as e:
+            logger.error(f"Error inserting data into SQL: {e}")
+            raise
 
     def load_db_table_to_df(self, table_name: str) -> pd.DataFrame:
         """
@@ -91,10 +174,10 @@ class GenData:
         # Append the computed data to the data list
         self.data_list.append({
             'missing_cells': sudoku.num_missing_cells,
-            'num_qubits_sim': sim_num_qubits,
+            'num_qubits_simple_encoding': sim_num_qubits,
             'total_gates_simple_encoding': sim_total_gates,
             'mcx_gates_simple_encoding': sim_mcx_gates,
-            'num_qubits_pat': pat_num_qubits,
+            'num_qubits_pattern_encoding': pat_num_qubits,
             'total_gates_pattern_encoding': pat_total_gates,
             'mcx_gates_pattern_encoding': pat_mcx_gates
         })
@@ -107,82 +190,6 @@ class GenData:
             raise ValueError("Database engine is not set. Please provide a valid db_url when initializing GenData.")
         # Create all tables defined by the Base class
         Base.metadata.create_all(self.engine)
-
-    def insert_into_sql(self) -> None:
-        """
-        Insert the data into the 'quantum_resources' table in the database.
-        """
-        if self.engine is None:
-            raise ValueError("Database engine is not set. Please provide a valid db_url when initializing GenData.")
-        try:
-            # Ensure the table exists
-            self._create_table_if_not_exists()
-            # Convert data list to DataFrame
-            df = pd.DataFrame(self.data_list)
-            # Define data types for the DataFrame columns
-            dtype = {
-                'missing_cells': Integer(),
-                'num_qubits_sim': Integer(),
-                'total_gates_simple_encoding': Integer(),
-                'mcx_gates_simple_encoding': Integer(),
-                'num_qubits_pat': Integer(),
-                'total_gates_pattern_encoding': Integer(),
-                'mcx_gates_pattern_encoding': Integer(),
-            }
-            # Insert data into the SQL table
-            df.to_sql('quantum_resources', self.engine, if_exists='append', index=False, dtype=dtype, method='multi')
-        except Exception as e:
-            logger.error(f"Error inserting data into SQL: {e}")
-            raise
-
-    def generate_data(self, num_empty_cells: int = None, num_cells_range: tuple = (1, 9)) -> pd.DataFrame:
-        """
-        Generate Sudoku puzzles and compute quantum resources for each puzzle.
-        
-        Parameters:
-        - num_empty_cells: Specific number of missing cells to generate puzzles with (optional).
-        - num_cells_range: Tuple specifying a range of missing cells if num_empty_cells is not provided.
-        
-        Returns:
-        - A DataFrame containing the quantum resource data for the generated puzzles.
-        """
-        if num_empty_cells is not None:
-            if not isinstance(num_empty_cells, int) or num_empty_cells < 0:
-                raise ValueError("num_empty_cells must be a non-negative integer.")
-        if not (isinstance(num_cells_range, tuple) and len(num_cells_range) == 2):
-            raise ValueError("num_cells_range must be a tuple of two integers.")
-
-        if num_empty_cells is None:
-            # Loop over a range of missing cells if num_empty_cells is not specified
-            for i in range(num_cells_range[0], num_cells_range[1] + 1):
-                for _ in tqdm(range(self.num_puzzles), desc=f"Generating puzzles with {i} missing cells"):
-                    sudoku = Sudoku(grid_size=self.size, num_missing_cells=i)
-                    self._append_quantum_resources(sudoku)
-        else:
-            # Generate data for a specific number of missing cells
-            for _ in tqdm(range(self.num_puzzles), desc=f"Generating puzzles with {num_empty_cells} missing cells"):
-                sudoku = Sudoku(grid_size=self.size, num_missing_cells=num_empty_cells)
-                self._append_quantum_resources(sudoku)
-
-        return pd.DataFrame(self.data_list)
-
-    def find_quantum_resources(self, sudoku: Sudoku):
-        """
-        Compute quantum resources required for solving a Sudoku puzzle using simple and pattern encodings.
-        
-        Parameters:
-        - sudoku: A Sudoku instance representing the puzzle to be solved.
-        
-        Returns:
-        - A tuple containing quantum resource data for both encodings (simple and pattern).
-        """
-        # Compute quantum resources for simple encoding
-        circ = ExactCoverQuantumSolver(sudoku, simple=True, pattern=False)
-        sim_num_qubits, sim_total_gates, sim_mcx_gates = circ.find_resources()
-        # Compute quantum resources for pattern encoding
-        circ = ExactCoverQuantumSolver(sudoku, simple=False, pattern=True)
-        pat_num_qubits, pat_total_gates, pat_mcx_gates = circ.find_resources()
-        return sim_num_qubits, sim_total_gates, sim_mcx_gates, pat_num_qubits, pat_total_gates, pat_mcx_gates
 
 class QuantumDataAnalysis:
     """
@@ -201,6 +208,31 @@ class QuantumDataAnalysis:
         """
         return self.df.describe()
 
+    def plot_distributions_pdf(self) -> None:
+        """
+        Plot distributions of key quantum resource metrics and save them all into a single PDF report.
+        """
+        pdf_filename = 'quantum_resource_distributions.pdf'
+        with PdfPages(pdf_filename) as pdf:
+            metrics = [
+                'num_qubits_simple_encoding', 'total_gates_simple_encoding', 'mcx_gates_simple_encoding',
+                'num_qubits_pattern_encoding', 'total_gates_pattern_encoding', 'mcx_gates_pattern_encoding'
+            ]
+            for metric in metrics:
+                # Plot the distribution of each metric
+                sns.histplot(data=self.df, x=metric, kde=True)
+                plt.title(f'Distribution of {metric}')
+                pdf.savefig()  # Save the current figure to the PDF
+                plt.close()
+                
+            correlation = self.df.corr()
+            sns.heatmap(correlation, annot=True, cmap='coolwarm', linewidths=0.5)
+            pdf.savefig()
+            
+            sns.pairplot(self.df)
+            pdf.savefig()
+            
+
     def correlation_matrix(self) -> pd.DataFrame:
         """
         Compute the correlation matrix of the DataFrame.
@@ -215,8 +247,8 @@ class QuantumDataAnalysis:
         Plot distributions of key quantum resource metrics and save them as image files.
         """
         metrics = [
-            'num_qubits_sim', 'total_gates_simple_encoding', 'mcx_gates_simple_encoding',
-            'num_qubits_pat', 'total_gates_pattern_encoding', 'mcx_gates_pattern_encoding'
+            'num_qubits_simple_encoding', 'total_gates_simple_encoding', 'mcx_gates_simple_encoding',
+            'num_qubits_pattern_encoding', 'total_gates_pattern_encoding', 'mcx_gates_pattern_encoding'
         ]
         for metric in metrics:
             # Plot the distribution of each metric
@@ -234,30 +266,6 @@ class QuantumDataAnalysis:
         plt.savefig('pair_plots.png')
         plt.close()
 
-    def plot_distributions_pdf(self) -> None:
-        """
-        Plot distributions of key quantum resource metrics and save them all into a single PDF report.
-        """
-        pdf_filename = 'quantum_resource_distributions.pdf'
-        with PdfPages(pdf_filename) as pdf:
-            metrics = [
-                'num_qubits_sim', 'total_gates_simple_encoding', 'mcx_gates_simple_encoding',
-                'num_qubits_pat', 'total_gates_pattern_encoding', 'mcx_gates_pattern_encoding'
-            ]
-            for metric in metrics:
-                # Plot the distribution of each metric
-                sns.histplot(data=self.df, x=metric, kde=True)
-                plt.title(f'Distribution of {metric}')
-                pdf.savefig()  # Save the current figure to the PDF
-                plt.close()
-                
-            correlation = self.df.corr()
-            sns.heatmap(correlation, annot=True, cmap='coolwarm', linewidths=0.5)
-            pdf.savefig()
-            
-            sns.pairplot(self.df)
-            pdf.savefig()
-            
     def plot_interactive_correlation_heatmap(self) -> None:
         """
         Plot an interactive heatmap showing correlations between different features.
@@ -285,7 +293,7 @@ class QuantumDataAnalysis:
         """
         from scipy.stats import ttest_ind
         # Loop through key metrics and perform t-tests between simple and pattern encodings
-        for column in ['num_qubits_sim', 'total_gates_simple_encoding', 'mcx_gates_simple_encoding']:
+        for column in ['num_qubits_simple_encoding', 'total_gates_simple_encoding', 'mcx_gates_simple_encoding']:
             pattern_column = column.replace('simple', 'pattern')
             t_stat, p_value = ttest_ind(self.df[column], self.df[pattern_column], equal_var=False, nan_policy='omit')
             logger.info(f"T-test for {column} vs {pattern_column}: t-statistic = {t_stat:.4f}, p-value = {p_value:.4f}")
