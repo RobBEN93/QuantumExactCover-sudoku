@@ -25,6 +25,8 @@ This an initial proposal for a framework for **solving Sudoku puzzles on quantum
 
 This repository would offer tools for taking custom, or generating random Sudoku puzzles, encoding them into quantum circuits through [`pytket`](https://tket.quantinuum.com/), and executing them on a simulator/external backend (if sufficiently small).
 
+Additionally some features for data analysis are included for generating and examining large datasets of Sudoku puzzles and their corresponding quantum resource requirements.
+
 **All content is a work-in-progress**
 
 ## Features
@@ -44,6 +46,8 @@ This repository would offer tools for taking custom, or generating random Sudoku
 - Graphical representation of data analysis results.
 
 ## Basic Usage
+
+*You can also check the [notebooks](link)*
 
 ### Sudoku Generation
 
@@ -191,7 +195,7 @@ analysis.plot_correlation_heatmap()
 
 ## Quantum Algorithm
 
-The quantum circuit aims to solve the puzzle by finding a valid solution through a quantum algorithm based on Grover's algorithm, for solving exact cover problems. [[Jiang,Wang]](#references)
+The quantum circuit aims to solve the puzzle by finding a valid solution through a quantum algorithm based on Grover's algorithm, for solving *exact cover problems*. [[Jiang,Wang]](#references)
 
 An *exact cover problem* is an NP-complete problem in which each element of a given set must be covered exactly once by a subset from a given collection of its subsets. 
 
@@ -266,7 +270,7 @@ We can solve this by satisfying certain requirements:
       Box 3 is missing digits 1 and 3 -     - ('box', 3, 1), ('box', 3, 3)
       Box 4 is missing digit 2 -            - ('box', 4, 2)
 
-We then take $U$ as the union of these constraints. Notice that covering all of its elements exactly once would represent a solution!
+We then take $U$ as the union of these constraints. **Notice that covering all of its elements exactly once would represent a solution!**
 
 For setting up the subsets to cover $U$, we provide two different encodings:
 
@@ -295,9 +299,9 @@ For setting up the subsets to cover $U$, we provide two different encodings:
 
 (*Each encoding type impacts the quantum resources required, such as the number of qubits and gates.*)
 
-### Installation
+## Installation
 
-#### Prerequisites
+### Prerequisites
 
 - Python 3.8 or higher
 
@@ -305,12 +309,12 @@ For setting up the subsets to cover $U$, we provide two different encodings:
 
 - An [IBM Quantum Platform](https://quantum.ibm.com/) account (Optional)
 
-#### Steps
+### Steps
 
 - Clone the repository:
 
 ```bash
-git clone https://github.com/yourusername/sudoku-quantum-solver.git
+git clone https://github.com/username/repository.git
 ```
 
 - Install the dependencies:
@@ -320,38 +324,48 @@ pip install -r requirements.txt
 pip install .
 ```
 
+- Log into IBM-Q running on a backend (Optional):
+
+```python
+from qiskit_ibm_runtime import QiskitRuntimeService
+
+# Get your IBM Quantum Platform token and replace ibm_token with it
+QiskitRuntimeService.save_account(channel="ibm_quantum", token=ibm_token, overwrite=True)
+```
 
 ### Current Limitations
 
-- Current Quantum Hardware:
+- *Quantum Hardware*:
 Current hardware constraints, including limited qubit count and coherence times, impede the resolution of even moderately complex puzzles.
 
-- ExactCoverQuantumSolver limitations:
+- *ExactCoverQuantumSolver limitations*:
   - *Assuming single solutions*: Given that the algorithm is based on Grover's we need to know the 
   number of solutions beforehand to correctly amplify the phases of the solution states. 
   However, for simplicity single-solution is assumed but actual depth for each puzzle could vary significantly.
-  - *Highly expensive design*: While the implemented algorithm offers an elegant design, it makes use of a very high number of MCX gates which in *transpilation* causes a significant overhead of resources.
+  - *Highly expensive design*: While the implemented algorithm offers an elegant design, it makes use of a very high number of MCX gates which in [*transpilation*](https://docs.quantum.ibm.com/guides/transpile) results in a significant overhead of resources.
 
-- Logical circuit resource estimation: The resource estimations are based on the logical circuit, that is the idealized, architecture-agnostic version of the circuit. Different hardware supports different basis gates and specific architecture that makes the actual transpiled circuit much more expensive.
+- *Logical circuit resource estimation*: The resource estimations are based on the logical circuit, that is the idealized, architecture-agnostic version of the circuit. Different hardware supports different basis gates and specific architecture that makes the actual transpiled circuit much more expensive.
 
-- Scalability:
+- *Scalability*:
 As the number of missing cells increases, the complexity of the quantum circuits grows significantly, requiring more qubits and gates. The resources grow too fast from around 50 missing cells so estimations are hard to calculate.
 
-- Simulation:
+- *Simulation*:
 Running simulations for 20-25 qubits is possible for most users, 25-35 qubits demands higher RAM capabilities and substantial computational resources, while 35+ qubits requires high performance computing.
 
 
 
 ### Possible Directions
 
-To address the current limitations and enhance the functionality of the Sudoku Quantum Solver, the following areas are proposed for future development:
+The following areas are proposed for future development:
+
+- Include other sudoku-solving quantum algorithms.
 
 - Extend benchmarking to include other quantum backends.
 
 - Improvements to the ExactCoverQuantumSolver:
-   - Explore hybrid Quantum Exact Cover - Backracking approaches
    - Find number of solutions for a given puzzle by [quantum counting](https://en.wikipedia.org/wiki/Quantum_counting_algorithm) 
   [[Jiang,Wang](#references)] (introduces significant overhead in resources)
+   - Explore hybrid Quantum Exact Cover - Backracking approaches
   
 - Quantum Circuit Optimization:
 
@@ -359,15 +373,7 @@ To address the current limitations and enhance the functionality of the Sudoku Q
 
 - Incorporate error mitigation where required.
 
-- Scalability Enhancements:
-
-  - Adapt the solver to handle other constraint satisfaction problems.
-
-  - Different computing approaches to manage computational loads.
-
-- Enhance Data Analysis:
-
-  - Obtain better quality data and apply more specific techniques (e.g. regression analysis).
+- Enhance Data Generation and Analysis.
 
 - User Interface Development:
 
@@ -381,7 +387,7 @@ To address the current limitations and enhance the functionality of the Sudoku Q
 
 - Encourage community contributions.
 
-# References
+## References
 
 ###### [Jiang,Wang]
  J. -R. Jiang and Y. -J. Wang, "Quantum Circuit Based on Grover’s Algorithm to Solve Exact Cover Problem," 2023 VTS Asia Pacific Wireless Communications Symposium (APWCS), Tainan city, Taiwan, 2023, pp. 1-5, doi: 10.1109/APWCS60142.2023.10234054.
