@@ -1,178 +1,72 @@
-# Table of Contents
+# Sudoku Quantum Solver Framework
+## Table of Contents
 - [Introduction](#introduction)
 - [Features](#features)
   - [Sudoku Puzzles](#sudoku-puzzles)
-  - [Quantum Circuit Construction](#quantum-circuit-construction)
+  - [Quantum Resource Estimation and Circuit Construction](#quantum-resource-estimation-and-circuit-construction)
   - [Data Generation & Analysis](#data-generation--analysis)
-  - [Benchmarking](#benchmarking)
-  - [Visualization](#visualization)
-- [Architecture](#architecture)
+- [Basic Usage](#basic-usage)
   - [Sudoku Generation](#sudoku-generation)
-  - [Quantum Circuit Construction](#quantum-circuit-construction-1)
-- [Encoding Methods](#encoding-methods)
-- [Data Analysis & Benchmarking](#data-analysis--benchmarking)
-  - [Metrics Collected](#metrics-collected)
-  - [Benchmark on IBM Backend](#benchmark-on-ibm-backend)
-- [Demo](#demo)
+  - [Quantum Computation](#quantum-computation)
+    - [Benchmark on IBM Backend](#benchmark-on-ibm-backend)
+  - [Data Analysis](#data-analysis)
+- [Quantum Algorithm](#quantum-algorithm)
+  - [Puzzle Encoding](#puzzle-encoding)
 - [Installation](#installation)
   - [Prerequisites](#prerequisites)
   - [Steps](#steps)
-- [Usage](#usage)
-  - [Generating a Sudoku Puzzle](#generating-a-sudoku-puzzle)
-  - [Constructing a Quantum Circuit](#constructing-a-quantum-circuit)
-  - [Running the Benchmark](#running-the-benchmark)
-- [Results](#results)
-- [Limitations](#limitations)
-- [Future Work](#future-work)
+- [Current Limitations](#current-limitations)
+- [Possible Directions](#possible-directions)
+- [References](#references)
 
 ## Introduction
-This project provides tools to generate customizable Sudoku puzzles, encode them into quantum circuits, and analyze the performance of these circuits both locally and on external backends.
 
-### Features
+This an initial proposal for a framework for **solving Sudoku puzzles on quantum computers** and **providing easy-to-understand benchmarks** to evaluate the capabilities of evolving quantum hardware.
 
-#### Sudoku Puzzles
-- Random puzzle generation with adjustable number of missing cells. through [`sudoku-py`](https://pypi.org/project/sudoku-py/)
-- Introduce custom puzzle
-- 
+This repository would offer tools for taking custom, or generating random Sudoku puzzles, encoding them into quantum circuits through [`pytket`](https://tket.quantinuum.com/), and executing them on a simulator/external backend (if sufficiently small).
 
-#### Quantum Circuit Construction
-- Two distinct encoding methods
-- Efficient representation of Sudoku constraints
+**All content is a work-in-progress**
 
-#### Data Generation, Analysis & Visualization
-- Generate data for thousands of puzzles
-- Collect metrics on quantum resources
-- Graphical representation of data analysis results
+## Features
 
-## Architecture
+### Sudoku Puzzles
+- Random puzzle generation with adjustable number of missing cells through [`sudoku-py`](https://pypi.org/project/sudoku-py/)
+
+### Quantum Resource Estimation and Circuit Construction
+- Given a sudoku puzzle we can build the quantum circuit to solve it.
+- We can find the circuit's expected number of qubits, number of multi-controlled-X gates and total number of gates. (Logical resources)
+
+### Solution on a Backend or a Simulator
+- Given the problem size we can transpile the circuit and execute it through a simulator or QPU backend. However, due to the current limitations of quantum hardware, solving even small-sized puzzles remains challenging.
+
+### Data Generation, Analysis & Visualization
+- Generate data for any number of puzzles to collect metrics on quantum resources.
+- Graphical representation of data analysis results.
+
+## Basic Usage
 
 ### Sudoku Generation
 
-The `Sudoku` class is central to the puzzle generation process. It allows you to:
-
-**Initialize and Plot a Puzzle:**
+The `Sudoku` class is central to the program.
 
 ```python
-# Initialize a 9x9 puzzle with 30 missing cells
-sudoku = Sudoku(grid_size=3, missing_cells=30)
-``` 
+from python_package.Sudoku import Sudoku
+```
+
+ It allows you to:
+
+- Initialize and Plot a Puzzle:
 
 ```python
+# Initialize a 9x9 puzzle with 64 missing cells
+sudoku = Sudoku(grid_size=3, missing_cells=64)
 sudoku.plot()
 ```
+*Output:*
 
-### Quantum Circuit Construction
+![9x9 sudoku example](media/9x9sudoku_example.png)
 
-The quantum circuit aims to solve the puzzle by finding a valid solution through an algorithm based on Grover's. [[Jiang,Wang]](#references)
-
-An exact cover problem is an NP-complete problem in which each element of a given set must be covered exactly once by a subset from a given collection of its subsets. Formally:
-
-Given a set $U$ and a family of subsets $S=\{S_1,\dots,S_n\}\subseteq\mathcal{P}(U)$, find a subfamily $S'\subseteq S$ such that: 
-$$
-i) \hspace{4pt} \forall \hspace{2pt} S_i, S_j \in S', \hspace{4pt} S_i\cap S_j = \emptyset.
-$$
-$$
-ii) \bigcup_{S_i \in S'} S_i = U
-$$
-
-For example, consider the problem:
-$$
-    U = \{ \textbf{A}, \textbf{B}, \textbf{C} \} 
-$$
-$$
-    S = \bigl\{ S_0 = \{\textbf{A}\}, S_1 = \{\textbf{B}\}, S_2 = \{\textbf{C}\}, S_3 = \{\textbf{A},\textbf{C}\}, S_4 = \{\textbf{A},\textbf{B}\}\bigr\}
-$$
-
-Notices that it has three solutions:
-$$
-    S' =  \bigl\{ S_0 = \{\textbf{A}\}, S_1 = \{\textbf{B}\}, S_2 = \{\textbf{C}\}\}\bigr\}, \\
-    S'' =  \bigl\{ S_2 = \{\textbf{C}\}, S_4 = \{\textbf{A},\textbf{B}\}\bigr\}, \\
-    S''' =  \bigl\{ S_1 = \{\textbf{B}\}, S_3 = \{\textbf{A},\textbf{C}\}\bigr\}. \\
-$$
-
-![Description of the image](media/circuit.jpeg)
-
-### Encoding
-Encoding Methods:
-- Simple encoding. 
-
-
-Once a Sudoku puzzle is generated, it is encoded into a quantum circuit using one of the two available encoding methods. 
-
-
-Description of Encoding Type A
-Suitable for certain puzzle complexities
-Encoding Type B:
-
-Description of Encoding Type B
-Optimized for different constraints
-
-Each encoding type impacts the quantum resources required, such as the number of qubits and gates.
-
-Data Analysis & Benchmarking
-
-Metrics Collected
-
-For each generated Sudoku puzzle and each encoding, the following metrics are collected:
-
-- **Number of Qubits.** (*The total number of qubits required to solve the puzzle using* `ExactCoverQuantumSolver`)
-- **Number of Multi-Controlled X-Gates.** (*MCX Gates are more complex and resource-intensive*)
-- **Total Number of Gates.**
-
-
-
-These metrics are gathered for thousands of puzzles across both encoding types, providing a comprehensive dataset for analysis.
-
-#### Benchmark on IBM Backend
-
-A small demo is included to benchmark the solver on the IBM quantum backend. This section discusses the performance results and highlights the current limitations:
-
-
-## Installation
-
-Steps
-Clone the Repository:
-```bash
-git clone https://github.com/yourusername/sudoku-quantum-solver.git
-```
-
-Install dependencies:
-
-```bash
-pip install -r requirements.txt
-pip install .
-```
-##### For IBM Backend Test
-Configure IBM Quantum Account:
-
-- Sign up at [IBM Quantum Platform](https://quantum.ibm.com/) to get your IBM Quantum API Token.
-
-- Save it using `QiskitRuntimeService`
-
-```python
-from qiskit_ibm_runtime import QiskitRuntimeService
-
-QiskitRuntimeService.save_account(channel="ibm_quantum", token='YOUR_IBM_QUANTUM_API_TOKEN', overwrite=True)
-```
-
-### Usage
-
-The main class Sudoku can obtain a Sudoku Puzzle for a given grid size and number of missing cells
-
-```python
-from sudoku_solver import Sudoku
-```
-
-#### Initialize a Sudoku puzzle with 9x9 grid and 30 missing cells
-```python
-sudoku = Sudoku(size=3, missing_cells=30)
-```
-
-```python
-sudoku.plot()
-```
-
-#### We can introduce a custom puzzle as a matrix
+- We can also introduce a custom puzzle as a matrix:
 
 ```python
 board = [
@@ -187,119 +81,305 @@ board = [
     [0, 0, 0, 0, 8, 0, 0, 7, 9]
 ]
 
-sudoku.custom_board(board):
+sudoku.custom_board(board)
 ```
 
-#### Initialize quantum features
+### Quantum Computation
+
+The `Sudoku` class has a `quantum` attribute which allows us to find the expected logical resources for the built-in quantum algorithm to solve the puzzle.
 
 ```python
-sudoku._init_quantum()
+sudoku.quantum.find_resources()
 ```
-
-
-
-#### Solution of any exact cover problem with ExactCoverQuantumSolver
+*Example output for a 4x4 sudoku with [simple encoding](#puzzle-encoding):*
+```python
+# Number of qubits || Number of MCX gates || Total number of gates
+(37, 375, 432)
+```
+Also we can construct and draw the quantum circuit.
 
 ```python
-from sudoku_solver import ExactCoverQuantumSolver
+circuit = sudoku.quantum.get_circuit()
 ```
 
 ```python
-solver = ExactCoverQuantumSolver()
-circuit = solver.construct_circuit()
+sudoku.quantum.draw_circuit()
 ```
 
-#### Data Analysis
+![Quantum-Circuit](media/example_circuit.jpeg)
 
-This script will generate data for thousands of puzzles, construct their quantum circuits, and collect the necessary metrics.
+The circuit is a `pytket` `Circuit` object, so we can use `pytket`'s methods to select a backend, for example, a simulator:
 
-### Results
-Figure 1: Comparison of total gate counts between Encoding Type A and B.
+```python
+backend = AerBackend()
+```
+or a quantum processor:
 
-Figure 2: Number of qubits required for different numbers of missing cells.
+```python
+backend = IBMQBackend("ibm_brisbane")
+```
 
-#### IBM Benchmarking
-- Run solver on IBM quantum backend
-- Analyze performance and limitations
+and then to compile and handle the circuit:
 
-Performance Insights:
+```python
+compiled_circ = backend.get_compiled_circuit(circuit)
+handle = backend.process_circuit(compiled_circ, n_shots=100)
+counts = backend.get_result(handle).get_counts()
+```
 
-Execution time
-Success rate
-Resource utilization
-Limitations:
+##### Test on IBM Backend
 
-The IBM backend did not perform as well as expected, primarily due to [specific reasons, e.g., noise, qubit coherence times, gate fidelity].
+A small [demo](link) is included to test the solver on the IBM quantum backend.
 
-Figure 3: Benchmark results on the IBM backend.
+![Image2](media/BackendOutput.png)
 
-The analysis reveals that:
+### Data Analysis
 
-Encoding Type A generally requires fewer qubits but more multi-controlled X-gates.
-Encoding Type B optimizes the number of multi-controlled gates at the expense of additional qubits.
-The IBM backend struggled with larger circuits due to [specific issues], limiting its practical performance for this application.
-### Limitations
-While the Sudoku Quantum Solver offers a novel approach to solving Sudoku puzzles using quantum computing, there are several limitations to consider:
+For generating perspective and future benchmarking, some data generation and analysis capabilities are included.
 
-- Number of solutions
+```python
+from python_package.data_generation import GenData, QuantumDataAnalysis
+```
 
-- IBM Backend Performance:
-The IBM quantum backend did not perform as well as expected. Issues such as noise, limited qubit coherence times, and gate fidelity adversely affected the solver's efficiency and accuracy.
+We can initialize a GenData object to generate any number of puzzles and then we generate metrics to a `pandas` DataFrame throug `generate_data`, for example:
+
+```python
+gen_data = GenData(grid_size=3, num_puzzles=100000)
+data_df = gen_data.generate_data(num_cells_range = (20,30))
+```
+
+#### Metrics
+
+For each generated Sudoku puzzle and each encoding, the following metrics are collected:
+
+- **Number of Qubits.** (*The total number of qubits required to solve the puzzle using* `ExactCoverQuantumSolver`)
+- **Number of Multi-Controlled X-Gates.** (*MCX Gates are more complex and resource-intensive*)
+- **Total Number of Gates.**
+
+(*The GenData class also has capabilities for writing-to/reading-from an SQL database.*)
+
+Then we get some stats and visualize the data through the `QuantumDataAnalysis` class as
+
+```python
+analysis = QuantumDataAnalysis(df=data_df)
+```
+
+**Statistics**:
+
+```python
+stats = analysis.get_statistics()
+print(stats)
+```
+*Output:*
+
+![Image2](media/example_stats.png)
+
+```python
+analysis.pair_plots()
+```
+*Output:*
+![Image](media/pair_plots_simple_encoding.png)
+
+![Image](media/pair_plots_pattern_encoding.png)
+
+```python
+analysis.plot_correlation_heatmap()
+```
+*Output:*
+
+![Image3](media/full_correlation_heatmap.png)
+
+## Quantum Algorithm
+
+The quantum circuit aims to solve the puzzle by finding a valid solution through a quantum algorithm based on Grover's algorithm, for solving exact cover problems. [[Jiang,Wang]](#references)
+
+An *exact cover problem* is an NP-complete problem in which each element of a given set must be covered exactly once by a subset from a given collection of its subsets. 
+
+Formally:
+
+Given a set $U$ and a family of subsets $S=\{S_1,\dots,S_n\}\subseteq\mathcal{P}(U)$, find a subfamily $S'\subseteq S$ such that:
+
+$$
+i) \hspace{4pt} \forall \hspace{2pt} S_i, S_j \in S', \hspace{4pt} S_i\cap S_j = \emptyset.
+$$
+
+$$
+ii) \bigcup_{S_i \in S'} S_i = U
+$$
+
+For example, consider the problem:
+
+$$
+    U = \{ \textbf{A}, \textbf{B}, \textbf{C} \} 
+$$
+
+$$
+    S = \bigl\{ S_0 = \{\textbf{A}\}, S_1 = \{\textbf{B}\}, S_2 = \{\textbf{C}\}, S_3 = \{\textbf{A},\textbf{C}\}, S_4 = \{\textbf{A},\textbf{B}\}\bigr\}
+$$
+
+**In a nutshell, Jiang and Wang's algorithm works by counting the number of times an element from $U$ is contained in any combination of subsets from $S$, and extracts the combinations that contain each element from $U$ exactly once.**
+
+For example, we can verify that 
+
+$$
+S' =  \bigl\{ S_2 = \{\textbf{C}\}, S_4 = \{\textbf{A},\textbf{B}\}\bigr\}
+$$ 
+
+is such correct solution.
+
+In fact, the algorithms checks for all combination of $S_0,S_1,\dots,S_4$ in superposition. That is, **we check for all possibilities at the same time!**
+
+See [[Jiang,Wang]](#references) for a detailed description of the algorithm. Also see (DEMO)
+
+### Puzzle Encoding
+
+We can actually *encode any sudoku puzzle into an exact cover problem*!
+
+For a simple example consider the following puzzle.
+![4x4 sudoku example](media/4x4sudoku_example.png)
+
+We can solve this by satisfying certain requirements:
+- Filling all of the missing cells. 
+
+      In this case:
+      
+      (1,1), (1,4), (3,4) and (4,4)
+
+- Filling all rows with all digits.
+
+      Row 1 is missing digit 2 - encoded as - ('row', 1, 2)
+      Row 2 is missing digit 3 -            - ('row', 2, 3)
+      Row 3 is missing digit 3 -            - ('row', 3, 3)
+      Row 4 is missing digits 1 and 2 -     - ('row', 4, 1), ('row', 4, 2)
+
+- Filling all columns with all digits.
+
+      Col 1 is missing digits 1 and 3 -     - ('col', 1, 1), ('col', 1, 3)
+      Col 2 is missing digit 3 -            - ('col', 2, 3)
+      Col 3 is missing digit 1 -            - ('col', 3, 1)
+      Col 4 is missing digit 2 -            - ('col', 4, 2)
+
+- Filling all subgrids (boxes) with all digits.
+
+      Box 1 is missing digit 3 -            - ('box', 1, 3)
+      Box 2 is missing digit 2 -            - ('box', 2, 2)
+      Box 3 is missing digits 1 and 3 -     - ('box', 3, 1), ('box', 3, 3)
+      Box 4 is missing digit 2 -            - ('box', 4, 2)
+
+We then take $U$ as the union of these constraints. Notice that covering all of its elements exactly once would represent a solution!
+
+For setting up the subsets to cover $U$, we provide two different encodings:
+
+- *Simple encoding* each set corresponds to filling one cell with each possible digit and include all compatible constraints
+
+      'S_0': [(1, 4), ('row', 1, 2), ('col', 4, 2), ('box', 2, 2)]
+
+      'S_1': [(2, 1), ('row', 2, 3), ('col', 1, 3), ('box', 1, 3)]
+      
+      'S_2': [(3, 2), ('row', 3, 3), ('col', 2, 3), ('box', 3, 3)]
+      
+      'S_3': [(4, 1), ('row', 4, 1), ('col', 1, 1), ('box', 3, 1)]
+      
+      'S_4': [(4, 3), ('row', 4, 2), ('col', 3, 2), ('box', 4, 2)]
+
+- *Pattern encoding* sets up all same-digit compatible constraints into each set
+
+      'S_0': [(3, 0), ('row', 3, 1), ('col', 0, 1), ('box', 2, 0, 1)],
+
+      'S_1': [(3, 2),('row', 3, 2),('col', 2, 2),('box', 2, 2, 2),
+              (0, 3),('row', 0, 2),('col', 3, 2),('box', 0, 2, 2)],
+
+      'S_2': [(1, 0),('row', 1, 3),('col', 0, 3),('box', 0, 0, 3),
+              (2, 1),('row', 2, 3),('col', 1, 3),('box', 2, 0, 3)]
+
+
+(*Each encoding type impacts the quantum resources required, such as the number of qubits and gates.*)
+
+### Installation
+
+#### Prerequisites
+
+- Python 3.8 or higher
+
+- `pytket` for quantum circuit construction
+
+- An [IBM Quantum Platform](https://quantum.ibm.com/) account (Optional)
+
+#### Steps
+
+- Clone the repository:
+
+```bash
+git clone https://github.com/yourusername/sudoku-quantum-solver.git
+```
+
+- Install the dependencies:
+
+```python
+pip install -r requirements.txt
+pip install .
+```
+
+
+### Current Limitations
+
+- Current Quantum Hardware:
+Current hardware constraints, including limited qubit count and coherence times, impede the resolution of even moderately complex puzzles.
+
+- ExactCoverQuantumSolver limitations:
+  - *Assuming single solutions*: Given that the algorithm is based on Grover's we need to know the 
+  number of solutions beforehand to correctly amplify the phases of the solution states. 
+  However, for simplicity single-solution is assumed but actual depth for each puzzle could vary significantly.
+  - *Highly expensive design*: While the implemented algorithm offers an elegant design, it makes use of a very high number of MCX gates which in *transpilation* causes a significant overhead of resources.
+
+- Logical circuit resource estimation: The resource estimations are based on the logical circuit, that is the idealized, architecture-agnostic version of the circuit. Different hardware supports different basis gates and specific architecture that makes the actual transpiled circuit much more expensive.
 
 - Scalability:
-As the number of missing cells increases, the complexity of the quantum circuits grows significantly, requiring more qubits and gates. This scalability issue limits the solver's practicality for very challenging puzzles.
+As the number of missing cells increases, the complexity of the quantum circuits grows significantly, requiring more qubits and gates. The resources grow too fast from around 50 missing cells so estimations are hard to calculate.
 
-- Encoding Constraints:
-The two encoding methods, while effective, have trade-offs between qubit count and gate complexity. Optimizing these encodings further remains an open challenge.
+- Simulation:
+Running simulations for 20-25 qubits is possible for most users, 25-35 qubits demands higher RAM capabilities and substantial computational resources, while 35+ qubits requires high performance computing.
 
-- Resource Requirements:
-Running simulations for thousands of puzzles demands substantial computational resources, which might not be feasible for all users.
-Current Quantum Hardware Limitations:
-The existing quantum hardware is still in its early stages, and its limitations directly impact the performance of quantum-based solvers like this one.
 
-### Future Work
+
+### Possible Directions
 
 To address the current limitations and enhance the functionality of the Sudoku Quantum Solver, the following areas are proposed for future development:
 
-- Add more sudoku-solving quantum algorithms.
+- Extend benchmarking to include other quantum backends.
 
-- Improved Encoding Methods:
-Develop more efficient encoding schemes to reduce the number of required qubits and gates.
-Explore hybrid encoding strategies that combine the strengths of both Encoding Type A and B.
-
-# Possible directions
-
+- Improvements to the ExactCoverQuantumSolver:
+   - Explore hybrid Quantum Exact Cover - Backracking approaches
+   - Find number of solutions for a given puzzle by [quantum counting](https://en.wikipedia.org/wiki/Quantum_counting_algorithm) 
+  [[Jiang,Wang](#references)] (introduces significant overhead in resources)
+  
 - Quantum Circuit Optimization:
-Implement advanced optimization techniques to minimize circuit depth and gate count.
-Utilize compiler optimizations and transpilation strategies specific to target quantum hardware.
-Enhanced Benchmarking:
 
-- Extend benchmarking to include other quantum backends beyond IBM, such as those provided by Rigetti or IonQ.
-Incorporate error mitigation techniques to improve the accuracy of results on noisy intermediate-scale quantum (NISQ) devices.
-Scalability Enhancements:
+   - Leverage compiler optimizations and transpilation strategies tailored to specific quantum hardware.
 
-- Adapt the solver to handle larger Sudoku puzzles or other constraint satisfaction problems.
-Investigate parallelization and distributed computing approaches to manage computational loads.
+- Incorporate error mitigation where required.
+
+- Scalability Enhancements:
+
+  - Adapt the solver to handle other constraint satisfaction problems.
+
+  - Different computing approaches to manage computational loads.
+
+- Enhance Data Analysis:
+
+  - Obtain better quality data and apply more specific techniques (e.g. regression analysis).
 
 - User Interface Development:
 
-Create a user-friendly interface or dashboard for easier interaction with the solver and visualization of results.
-Develop web-based tools to allow users to input puzzles and view solutions without deep technical knowledge.
+  - Create a user-friendly interface or dashboard for easier interaction with the solver and visualization of results.
 
-Community Engagement 
+  - Develop web-based tools to allow users to input puzzles and view solutions without deep technical knowledge.
 
-Encourage community contributions by setting up collaborative platforms, such as discussion forums or contribution guidelines.
-Host workshops or webinars to demonstrate the solver and gather feedback from users.
+- Comprehensive Documentation and Tutorials
 
-Key Points for the Future Work Section:
-- Placement: Positioned after the Limitations section to outline potential improvements following the discussion of current constraints.
-- Content: Details specific areas where the project can evolve, such as encoding methods, circuit optimization, scalability, user interface enhancements, and community engagement.
-- Clarity and Structure: Each future work item is clearly defined, making it easy for contributors and users to understand the proposed directions.
-- Encouragement for Contributions: Highlights opportunities for community involvement, fostering collaboration and innovation.
-- Final Tips:
-Be Specific and Actionable: Clearly define what needs to be done and how it can be achieved. This makes it easier for contributors to take actionable steps.
-- Prioritize Tasks: If certain future work items are more critical, consider indicating their priority to guide contributors.
-- Align with Project Goals: Ensure that the proposed future work aligns with the overall objectives of the project, maintaining coherence and focus.
+   - Provide educational resources to help users understand benchmarking of modern hardware.
+
+- Encourage community contributions.
 
 # References
 

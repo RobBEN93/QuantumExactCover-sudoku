@@ -208,31 +208,67 @@ class QuantumDataAnalysis:
         """
         return self.df.describe()
 
-    def plot_distributions_pdf(self) -> None:
+    def plot_distributions_pdf(self,file_path = None) -> None:
         """
         Plot distributions of key quantum resource metrics and save them all into a single PDF report.
+        
+        The method generates histograms for specified metrics, a correlation heatmap, and a pairplot.
+        It is optimized for handling large datasets by reducing histogram bins, lowering DPI, 
+        adjusting figure sizes, and downsampling data for the pairplot.
+        
+        Requirements:
+            - self.df: pandas DataFrame containing the required metrics as columns.
+        
+        Outputs:
+            - 'quantum_resource_distributions.pdf' in the current working directory.
         """
         pdf_filename = 'quantum_resource_distributions.pdf'
+        metrics = [
+            'num_qubits_simple_encoding', 'total_gates_simple_encoding', 'mcx_gates_simple_encoding',
+            'num_qubits_pattern_encoding', 'total_gates_pattern_encoding', 'mcx_gates_pattern_encoding'
+        ]
+        
+        # Reduce the number of bins for histograms and set default plot settings
+        bins = 20  # Set to a reasonable number of bins
+        dpi = 80   # Lower DPI for saved plots
+        figure_size = (8, 6)  # Set a smaller figure size
+        
         with PdfPages(pdf_filename) as pdf:
-            metrics = [
-                'num_qubits_simple_encoding', 'total_gates_simple_encoding', 'mcx_gates_simple_encoding',
-                'num_qubits_pattern_encoding', 'total_gates_pattern_encoding', 'mcx_gates_pattern_encoding'
-            ]
+            # Loop through each metric to plot its distribution
             for metric in metrics:
-                # Plot the distribution of each metric
-                sns.histplot(data=self.df, x=metric, kde=True)
-                plt.title(f'Distribution of {metric}')
-                pdf.savefig()  # Save the current figure to the PDF
+                try:
+                    plt.figure(figsize=figure_size)  # Set the figure size
+                    # Plot the distribution with fewer bins and disable KDE if not necessary
+                    sns.histplot(data=self.df, x=metric, kde=True, bins=bins)
+                    plt.title(f'Distribution of {metric}')
+                    pdf.savefig(dpi=dpi)  # Save plot to PDF with lower resolution
+                    plt.close()  # Close the figure to free memory
+                except Exception as e:
+                    logger.error(f"Error plotting {metric}: {e}")
+                    plt.close()  # Ensure figure is closed even if there's an error
+
+            try:
+                # Correlation heatmap
+                plt.figure(figsize=figure_size)
+                correlation = self.df.corr()
+                sns.heatmap(correlation, annot=True, cmap='coolwarm', linewidths=0.5)
+                plt.title('Correlation Heatmap')
+                pdf.savefig(dpi=dpi)  # Save heatmap to PDF
+                plt.close()  # Close the figure to free memory
+            except Exception as e:
+                logger.error(f"Error plotting correlation heatmap: {e}")
+                plt.close()
+
+            try:
+                # Pairplot (this can be intensive, so reduce the sample size if needed)
+                small_df = self.df.sample(frac=0.1) if len(self.df) > 1000 else self.df  # Downsample large datasets
+                sns.pairplot(small_df)
+                pdf.savefig(dpi=dpi)  # Save pairplot to PDF
+                plt.close()  # Close the figure to free memory
+            except Exception as e:
+                logger.error(f"Error plotting pair plots: {e}")
                 plt.close()
                 
-            correlation = self.df.corr()
-            sns.heatmap(correlation, annot=True, cmap='coolwarm', linewidths=0.5)
-            pdf.savefig()
-            
-            sns.pairplot(self.df)
-            pdf.savefig()
-            
-
     def correlation_matrix(self) -> pd.DataFrame:
         """
         Compute the correlation matrix of the DataFrame.
@@ -256,14 +292,86 @@ class QuantumDataAnalysis:
             plt.title(f'Distribution of {metric}')
             plt.savefig(f'{metric}_distribution.png')
             plt.close()
-
+                
     def pair_plots(self) -> None:
         """
-        Generate pair plots to visualize relationships between key metrics and save the plot.
+        Generate pair plots to visualize relationships between correlated metrics for 
+        simple encoding and pattern encoding, then save the plots separately.
         """
-        # Generate pair plots to visualize correlations between different metrics
-        sns.pairplot(self.df)
-        plt.savefig('pair_plots.png')
+        # Define the metric groups for each encoding scheme
+        simple_encoding_metrics = [
+            'num_qubits_simple_encoding', 
+            'total_gates_simple_encoding', 
+            'mcx_gates_simple_encoding'
+        ]
+        
+        pattern_encoding_metrics = [
+            'num_qubits_pattern_encoding', 
+            'total_gates_pattern_encoding', 
+            'mcx_gates_pattern_encoding'
+        ]
+        
+        # Generate and save pair plot for Simple Encoding Metrics
+        sns.pairplot(self.df[simple_encoding_metrics])
+        plt.title('Simple Encoding Metrics Pair Plot')
+        plt.savefig('pair_plots_simple_encoding.png', dpi=300, bbox_inches='tight')
+        plt.show()
+        plt.close()
+        
+        # Generate and save pair plot for Pattern Encoding Metrics
+        sns.pairplot(self.df[pattern_encoding_metrics])
+        plt.title('Pattern Encoding Metrics Pair Plot')
+        plt.savefig('pair_plots_pattern_encoding.png', dpi=300, bbox_inches='tight')
+        plt.show()
+        plt.close()
+
+    def full_correlation_heatmap(self,file_name = 'full_correlation_heatmap.png') -> None:
+        """
+        Plot a heatmap showing correlations between different features and save it as an image file.
+        """
+        # Compute the correlation matrix and plot it as a heatmap
+        correlation = self.df.corr()
+        sns.heatmap(correlation, annot=True, cmap='coolwarm', linewidths=0.5)
+        # plt.title('Correlation Heatmap of Quantum Resources')
+        plt.show()
+        plt.savefig(file_name, dpi=80)
+        plt.show()
+        plt.close()
+        
+    def plot_correlation_heatmaps(self) -> None:
+        """
+        Plot separate heatmaps showing correlations between correlated metrics for 
+        simple encoding and pattern encoding, then save the plots as image files.
+        """
+        # Define the metric groups for each encoding scheme
+        simple_encoding_metrics = [
+            'num_qubits_simple_encoding', 
+            'total_gates_simple_encoding', 
+            'mcx_gates_simple_encoding'
+        ]
+        
+        pattern_encoding_metrics = [
+            'num_qubits_pattern_encoding', 
+            'total_gates_pattern_encoding', 
+            'mcx_gates_pattern_encoding'
+        ]
+        
+        # Plot and save heatmap for Simple Encoding Metrics
+        correlation_simple = self.df[simple_encoding_metrics].corr()
+        plt.figure(figsize=(8, 6))
+        sns.heatmap(correlation_simple, annot=True, cmap='coolwarm', linewidths=0.5)
+        plt.title('Correlation Heatmap - Simple Encoding')
+        plt.savefig('correlation_heatmap_simple_encoding.png', dpi=300, bbox_inches='tight')
+        plt.show()
+        plt.close()
+        
+        # Plot and save heatmap for Pattern Encoding Metrics
+        correlation_pattern = self.df[pattern_encoding_metrics].corr()
+        plt.figure(figsize=(8, 6))
+        sns.heatmap(correlation_pattern, annot=True, cmap='coolwarm', linewidths=0.5)
+        plt.title('Correlation Heatmap - Pattern Encoding')
+        plt.savefig('correlation_heatmap_pattern_encoding.png', dpi=300, bbox_inches='tight')
+        plt.show()
         plt.close()
 
     def plot_interactive_correlation_heatmap(self) -> None:
@@ -275,17 +383,6 @@ class QuantumDataAnalysis:
                         text_auto=True, 
                         title='Interactive Correlation Heatmap of Quantum Resources')
         fig.show()
-
-    def plot_correlation_heatmap(self) -> None:
-        """
-        Plot a heatmap showing correlations between different features and save it as an image file.
-        """
-        # Compute the correlation matrix and plot it as a heatmap
-        correlation = self.df.corr()
-        sns.heatmap(correlation, annot=True, cmap='coolwarm', linewidths=0.5)
-        plt.title('Correlation Heatmap of Quantum Resources')
-        plt.savefig('correlation_heatmap.png')
-        plt.close()
 
     def perform_t_tests(self) -> None:
         """

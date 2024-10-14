@@ -35,10 +35,57 @@ class Sudoku():
     
     def custom_board(self,board):
         self.puzzle.board = board
+    
+    
+    def plot(self,title=None):
+        """# Create an instance of the SudokuPuzzle class
+            sudoku = SudokuPuzzle(...)
+
+            # Plot the Sudoku grid
+            fig = sudoku.plot(title="My Sudoku Puzzle")
+
+            # To display the plot in an interactive environment
+            fig.show()
+
+            # Alternatively, to save the plot to a file
+            fig.savefig("sudoku_plot.png") 
+        """
+        fig, ax = plt.subplots(figsize=(6, 6))
         
+        ax.set_xlim(0, self.board_size)
+        ax.set_ylim(0, self.board_size)
+        
+        minor_ticks = range(0, self.board_size + 1)
+        major_ticks = range(0, self.board_size + 1, int(self.board_size**0.5))
+        
+        for tick in minor_ticks:
+            ax.plot([tick, tick], [0, self.board_size], 'k', linewidth=0.5)
+            ax.plot([0, self.board_size], [tick, tick], 'k', linewidth=0.5)
+        
+        for tick in major_ticks:
+            ax.plot([tick, tick], [0, self.board_size], 'k', linewidth=3)
+            ax.plot([0, self.board_size], [tick, tick], 'k', linewidth=3)
+            
+        ax.set_xticks([])
+        ax.set_yticks([])
+        
+        # Add numbers to the grid
+        for (i, j, value) in self.pre_tuples:
+            if value == 0:  # Check if the value is zero
+                continue  # Skip the rest of the loop for this iteration
+            ax.text(j + 0.5, self.board_size - 0.5 - i, str(value),
+                    ha='center', va='center', fontsize=100/self.board_size)
+
+            
+        if title:
+            plt.title(title, fontsize=20)
+        
+        plt.close(fig)
+
+        return fig
+    
     def _init_quantum(self,simple=True,pattern=False):
         self.quantum = ExactCoverQuantumSolver(self,simple=simple,pattern=pattern)
-
     
     def find_preset_tuples(self):
         preset_tuples = []
@@ -77,152 +124,3 @@ class Sudoku():
                     for digit in digits:
                         open_tuples.append((i, j, digit))
         return open_tuples
-            
-    def puzzle_to_csv(self):
-        # Ensure the directory exists
-        directory = os.path.dirname(self.file_path)
-        if not os.path.exists(directory):
-            os.makedirs(directory)
-        
-        with open(self.file_path, mode='w', newline='') as file:
-            writer = csv.writer(file)
-            list = []
-            for row in self.puzzle.board:
-                row_list = []
-                for col in row:
-                    if col is None:
-                        row_list.append(0)
-                    else:
-                        row_list.append(col)
-                list.append(row_list)
-            for row in list:
-                writer.writerow(row)
-
-    def csv_to_set_tuples(self) -> dict[tuple: int]:
-        """Create a dictionary containing the preset values of the sudoku and initialize
-        the sudoku size"""
-
-        set_tuples = {}
-        with open(self.file_path, newline='') as file:
-            reader = csv.reader(file)
-            counter = 0
-            for i, row in enumerate(reader):
-                counter += 1
-                for j, value in enumerate(row):
-                    if value != "0":
-                        set_tuples[(i, j)] = {int(value)}
-            
-        self.size = counter
-
-        return set_tuples
-    
-    def plot_grid(self, set_tuples, title=None) -> Figure:
-        """ Plot the sudoku grid with the current set values"""
-
-        fig, ax = plt.subplots(figsize=(6, 6))
-        
-        ax.set_xlim(0, self.size)
-        ax.set_ylim(0, self.size)
-        
-        minor_ticks = range(0, self.size + 1)
-        major_ticks = range(0, self.size + 1, int(self.size**0.5))
-        
-        for tick in minor_ticks:
-            ax.plot([tick, tick], [0, self.size], 'k', linewidth=0.5)
-            ax.plot([0, self.size], [tick, tick], 'k', linewidth=0.5)
-        
-        for tick in major_ticks:
-            ax.plot([tick, tick], [0, self.size], 'k', linewidth=3)
-            ax.plot([0, self.size], [tick, tick], 'k', linewidth=3)
-            
-        ax.set_xticks([])
-        ax.set_yticks([])
-        
-        # Add numbers to the grid from the dictionary
-        for (i, j), value in set_tuples.items():
-            ax.text(j + 0.5, self.size -0.5 - i, str(next(iter(value))),
-                    ha='center', va='center', fontsize=100/self.size)
-            
-        if title:
-            plt.title(title, fontsize=20)
-        
-        plt.close(fig)
-
-        return fig
-    
-    def plot(self):
-        self.puzzle_to_csv()
-        set_tuples = self.csv_to_set_tuples()
-        plot = self.plot_grid(set_tuples)
-        return plot
-    
-    def alt_plot(self, title=None) -> Figure:
-        """Plot the Sudoku grid with the current set values without using CSV."""
-        
-        """# Create an instance of the SudokuPuzzle class
-            sudoku = SudokuPuzzle(...)
-
-            # Plot the Sudoku grid
-            fig = sudoku.plot(title="My Sudoku Puzzle")
-
-            # To display the plot in an interactive environment
-            fig.show()
-
-            # Alternatively, to save the plot to a file
-            fig.savefig("sudoku_plot.png") 
-        """
-        # Initialize a dictionary to hold preset values
-        set_tuples = {}
-        for i, row in enumerate(self.puzzle.board):
-            for j, value in enumerate(row):
-                if value is not None and value != 0:
-                    set_tuples[(i, j)] = {int(value)}
-        
-        # Determine the size of the Sudoku grid
-        self.size = len(self.puzzle.board)
-        
-        # Create the plot
-        fig, ax = plt.subplots(figsize=(6, 6))
-        
-        # Set the limits of the plot
-        ax.set_xlim(0, self.size)
-        ax.set_ylim(0, self.size)
-        
-        # Define minor and major ticks based on Sudoku size
-        minor_ticks = range(0, self.size + 1)
-        major_step = int(self.size ** 0.5)
-        major_ticks = range(0, self.size + 1, major_step)
-        
-        # Draw minor grid lines
-        for tick in minor_ticks:
-            ax.plot([tick, tick], [0, self.size], 'k', linewidth=0.5)
-            ax.plot([0, self.size], [tick, tick], 'k', linewidth=0.5)
-        
-        # Draw major grid lines
-        for tick in major_ticks:
-            ax.plot([tick, tick], [0, self.size], 'k', linewidth=3)
-            ax.plot([0, self.size], [tick, tick], 'k', linewidth=3)
-            
-        # Remove axis ticks
-        ax.set_xticks([])
-        ax.set_yticks([])
-        
-        # Add numbers to the grid
-        for (i, j), value in set_tuples.items():
-            ax.text(
-                j + 0.5, 
-                self.size - 0.5 - i, 
-                str(next(iter(value))),
-                ha='center', 
-                va='center', 
-                fontsize=100 / self.size
-            )
-                    
-        # Add title if provided
-        if title:
-            plt.title(title, fontsize=20)
-        
-        # Close the figure to prevent display in some environments
-        plt.close(fig)
-
-        return fig
