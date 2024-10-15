@@ -68,8 +68,9 @@ sudoku = Sudoku(grid_size=3, missing_cells=64)
 sudoku.plot()
 ```
 *Output:*
-
+<div style="text-align: center;">
 <img src="media/9x9sudoku_example.png" width="350"/>
+</div>
 
 - We can also introduce a custom puzzle as a matrix:
 
@@ -134,9 +135,9 @@ counts = backend.get_result(handle).get_counts()
 ##### Test on IBM Backend
 
 A small [demo](https://github.com/RobBEN93/QuantumExactCover-sudoku/blob/master/notebooks/IBMQBackendDEMO.ipynb) is included to test the solver on the IBM quantum backend.
-
+<div style="text-align: center;">
 <img src="media/BackendOutput.png" width="400"/>
-
+</div>
 ### Data Analysis
 
 For generating perspective and future benchmarking, some data generation and analysis capabilities are included.
@@ -175,25 +176,34 @@ stats = analysis.get_statistics()
 print(stats)
 ```
 *Output:*
-
-<img src="media/example_stats.png" width="350"/>
+<div style="text-align: center;">
+<img src="media/example_stats.png" width="420"/>
+</div>
 
 ```python
 analysis.pair_plots()
 ```
+
 *Output:*
 
+<div style="text-align: center;">
 <img src="media/pair_plots_simple_encoding.png" width="300"/>
+</div>
 
-
+<div style="text-align: center;">
 <img src="media/pair_plots_pattern_encoding.png" width="300"/>
+</div>
+
 
 ```python
 analysis.plot_correlation_heatmap()
 ```
+
 *Output:*
 
+<div style="text-align: center;">
 <img src="media/full_correlation_heatmap.png" width="400"/>
+</div>
 
 ## Installation
 
@@ -271,9 +281,12 @@ We can actually *encode any sudoku puzzle into an exact cover problem*!
 
 For a simple example consider the following puzzle.
 
+<div style="text-align: center;">
 <img src="media/4x4sudoku_example.png" width="350"/>
+</div>
 
 We can solve this by satisfying certain requirements:
+
 - Filling all of the missing cells. 
 
       In this case:
@@ -334,7 +347,7 @@ For setting up the subsets to cover $U$, we provide two different encodings:
 
 A high-level diagram of the functioning of the current program is provided:
 
-![Quantum-Circuit](media/high_level_diagram.png)
+![UML](media/high_level_diagram.png)
 
 ## Current Limitations
 
