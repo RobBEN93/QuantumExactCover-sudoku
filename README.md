@@ -15,7 +15,7 @@
   - [Steps](#steps)
 - [Quantum Algorithm](#quantum-algorithm)
   - [Puzzle Encoding](#puzzle-encoding)
-- [Quantum Algorithm](#quantum-algorithm)
+- [Program Design](#program-design)
 - [Current Limitations](#current-limitations)
 - [Possible Directions](#possible-directions)
 - [References](#references)
@@ -48,7 +48,7 @@ Additionally some features for data analysis are included for generating and exa
 
 ## Basic Usage
 
-*You can also check the [notebooks](link)*
+*You can also check the [notebooks](https://github.com/RobBEN93/QuantumExactCover-sudoku/tree/master/notebooks)*
 
 ### Sudoku Generation
 
@@ -134,7 +134,7 @@ counts = backend.get_result(handle).get_counts()
 
 ##### Test on IBM Backend
 
-A small [demo](link) is included to test the solver on the IBM quantum backend.
+A small [demo](https://github.com/RobBEN93/QuantumExactCover-sudoku/blob/master/notebooks/IBMQBackendDEMO.ipynb) is included to test the solver on the IBM quantum backend.
 
 ![Image2](media/BackendOutput.png)
 
@@ -229,13 +229,6 @@ from qiskit_ibm_runtime import QiskitRuntimeService
 QiskitRuntimeService.save_account(channel="ibm_quantum", token=ibm_token, overwrite=True)
 ```
 
-## Program Design
-
-A high-level diagram of the functioning of the current program is provided:
-
-
-![Quantum-Circuit](media/high_level_diagram.png)
-
 ## Quantum Algorithm
 
 The quantum circuit aims to solve the puzzle by finding a valid solution through a quantum algorithm based on Grover's algorithm, for solving *exact cover problems*. [[Jiang,Wang]](#references)
@@ -276,7 +269,7 @@ is such correct solution.
 
 In fact, the algorithms checks for all combination of $S_0,S_1,\dots,S_4$ in superposition. That is, **we check for all possibilities at the same time!**
 
-See [[Jiang,Wang]](#references) for a detailed description of the algorithm. Also see [DEMO](link).
+See [[Jiang,Wang]](#references) for a detailed description of the algorithm. Also see [DEMO](https://github.com/RobBEN93/QuantumExactCover-sudoku/blob/master/notebooks/QuantumCircuitDEMO.ipynb).
 
 ### Puzzle Encoding
 
@@ -341,6 +334,12 @@ For setting up the subsets to cover $U$, we provide two different encodings:
 
 
 (*Each encoding type impacts the quantum resources required, such as the number of qubits and gates.*)
+
+## Program Design
+
+A high-level diagram of the functioning of the current program is provided:
+
+![Quantum-Circuit](media/high_level_diagram.png)
 
 ## Current Limitations
 
