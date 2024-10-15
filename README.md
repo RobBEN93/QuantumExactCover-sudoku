@@ -69,7 +69,7 @@ sudoku.plot()
 ```
 *Output:*
 
-![9x9 sudoku example](media/9x9sudoku_example.png)
+<img src="media/9x9sudoku_example.png" width="350"/>
 
 - We can also introduce a custom puzzle as a matrix:
 
@@ -176,7 +176,7 @@ print(stats)
 ```
 *Output:*
 
-<img src="media/example_stats.png" width="300"/>
+<img src="media/example_stats.png" width="350"/>
 
 ```python
 analysis.pair_plots()
@@ -276,7 +276,8 @@ See [[Jiang,Wang]](#references) for a detailed description of the algorithm. Als
 We can actually *encode any sudoku puzzle into an exact cover problem*!
 
 For a simple example consider the following puzzle.
-![4x4 sudoku example](media/4x4sudoku_example.png)
+
+<img src="media/4x4sudoku_example.png" width="350"/>
 
 We can solve this by satisfying certain requirements:
 - Filling all of the missing cells. 
