@@ -250,11 +250,11 @@ $$
 For example, consider the problem:
 
 $$
-    U = \{ \textbf{A}, \textbf{B}, \textbf{C} \} 
+    U = \{ \textbf{A}, \textbf{B}, \textbf{C} \}
 $$
 
 $$
-    S = \{\{ S_0 = \{\textbf{A}\}, S_1 = \{\textbf{B}\}, S_2 = \{\textbf{C}\}, S_3 = \{\textbf{A},\textbf{C}\}, S_4 = \{\textbf{A},\textbf{B}\}\}\}
+    S = \{ S_0 = \{\textbf{A}\}, S_1 = \{\textbf{B}\}, S_2 = \{\textbf{C}\}, S_3 = \{\textbf{A},\textbf{C}\}, S_4 = \{\textbf{A},\textbf{B}\}\}
 $$
 
 **In a nutshell, Jiang and Wang's algorithm works by counting the number of times an element from $U$ is contained in any combination of subsets from $S$, and extracts the combinations that contain each element from $U$ exactly once.**
@@ -262,7 +262,7 @@ $$
 For example, we can verify that 
 
 $$
-S' =  \{\{ S_2 = \{\textbf{C}\}, S_4 = \{\textbf{A},\textbf{B}\}\}\}
+S' =  \{ S_2 = \{\textbf{C}\}, S_4 = \{\textbf{A},\textbf{B}\} \}
 $$ 
 
 is such correct solution.
