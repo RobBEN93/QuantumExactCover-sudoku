@@ -10,11 +10,12 @@
   - [Quantum Computation](#quantum-computation)
     - [Benchmark on IBM Backend](#benchmark-on-ibm-backend)
   - [Data Analysis](#data-analysis)
-- [Quantum Algorithm](#quantum-algorithm)
-  - [Puzzle Encoding](#puzzle-encoding)
 - [Installation](#installation)
   - [Prerequisites](#prerequisites)
   - [Steps](#steps)
+- [Quantum Algorithm](#quantum-algorithm)
+  - [Puzzle Encoding](#puzzle-encoding)
+- [Quantum Algorithm](#quantum-algorithm)
 - [Current Limitations](#current-limitations)
 - [Possible Directions](#possible-directions)
 - [References](#references)
@@ -25,7 +26,7 @@ This an initial proposal for a framework for **solving Sudoku puzzles on quantum
 
 This repository would offer tools for taking custom, or generating random Sudoku puzzles, encoding them into quantum circuits through [`pytket`](https://tket.quantinuum.com/), and executing them on a simulator/external backend (if sufficiently small).
 
-Additionally some features for data analysis are included for generating and examining large datasets of Sudoku puzzles and their corresponding quantum resource requirements.
+Additionally some features for data analysis are included for generating and examining datasets of Sudoku puzzles and their corresponding quantum resource requirements.
 
 **All content is a work-in-progress**
 
@@ -193,6 +194,48 @@ analysis.plot_correlation_heatmap()
 
 ![Image3](media/full_correlation_heatmap.png)
 
+
+## Installation
+
+### Prerequisites
+
+- Python 3.8 or higher
+
+- `pytket` for quantum circuit construction
+
+- An [IBM Quantum Platform](https://quantum.ibm.com/) account (Optional)
+
+### Steps
+
+- Clone the repository:
+
+```bash
+git clone https://github.com/username/repository.git
+```
+
+- Install the dependencies:
+
+```python
+pip install -r requirements.txt
+pip install .
+```
+
+- Log into IBM-Q running on a backend (Optional):
+
+```python
+from qiskit_ibm_runtime import QiskitRuntimeService
+
+# Get your IBM Quantum Platform token and replace ibm_token with it
+QiskitRuntimeService.save_account(channel="ibm_quantum", token=ibm_token, overwrite=True)
+```
+
+## Program Design
+
+A high-level diagram of the functioning of the current program is provided:
+
+
+![Quantum-Circuit](media/high_level_diagram.png)
+
 ## Quantum Algorithm
 
 The quantum circuit aims to solve the puzzle by finding a valid solution through a quantum algorithm based on Grover's algorithm, for solving *exact cover problems*. [[Jiang,Wang]](#references)
@@ -218,7 +261,7 @@ $$
 $$
 
 $$
-    S = \bigl\{ S_0 = \{\textbf{A}\}, S_1 = \{\textbf{B}\}, S_2 = \{\textbf{C}\}, S_3 = \{\textbf{A},\textbf{C}\}, S_4 = \{\textbf{A},\textbf{B}\}\bigr\}
+    S = \{\{ S_0 = \{\textbf{A}\}, S_1 = \{\textbf{B}\}, S_2 = \{\textbf{C}\}, S_3 = \{\textbf{A},\textbf{C}\}, S_4 = \{\textbf{A},\textbf{B}\}\}\}
 $$
 
 **In a nutshell, Jiang and Wang's algorithm works by counting the number of times an element from $U$ is contained in any combination of subsets from $S$, and extracts the combinations that contain each element from $U$ exactly once.**
@@ -226,14 +269,14 @@ $$
 For example, we can verify that 
 
 $$
-S' =  \bigl\{ S_2 = \{\textbf{C}\}, S_4 = \{\textbf{A},\textbf{B}\}\bigr\}
+S' =  \{\{ S_2 = \{\textbf{C}\}, S_4 = \{\textbf{A},\textbf{B}\}\}\}
 $$ 
 
 is such correct solution.
 
 In fact, the algorithms checks for all combination of $S_0,S_1,\dots,S_4$ in superposition. That is, **we check for all possibilities at the same time!**
 
-See [[Jiang,Wang]](#references) for a detailed description of the algorithm. Also see (DEMO)
+See [[Jiang,Wang]](#references) for a detailed description of the algorithm. Also see [DEMO](link).
 
 ### Puzzle Encoding
 
@@ -299,41 +342,7 @@ For setting up the subsets to cover $U$, we provide two different encodings:
 
 (*Each encoding type impacts the quantum resources required, such as the number of qubits and gates.*)
 
-## Installation
-
-### Prerequisites
-
-- Python 3.8 or higher
-
-- `pytket` for quantum circuit construction
-
-- An [IBM Quantum Platform](https://quantum.ibm.com/) account (Optional)
-
-### Steps
-
-- Clone the repository:
-
-```bash
-git clone https://github.com/username/repository.git
-```
-
-- Install the dependencies:
-
-```python
-pip install -r requirements.txt
-pip install .
-```
-
-- Log into IBM-Q running on a backend (Optional):
-
-```python
-from qiskit_ibm_runtime import QiskitRuntimeService
-
-# Get your IBM Quantum Platform token and replace ibm_token with it
-QiskitRuntimeService.save_account(channel="ibm_quantum", token=ibm_token, overwrite=True)
-```
-
-### Current Limitations
+## Current Limitations
 
 - *Quantum Hardware*:
 Current hardware constraints, including limited qubit count and coherence times, impede the resolution of even moderately complex puzzles.
@@ -354,7 +363,7 @@ Running simulations for 20-25 qubits is possible for most users, 25-35 qubits de
 
 
 
-### Possible Directions
+## Possible Directions
 
 The following areas are proposed for future development:
 
@@ -371,7 +380,7 @@ The following areas are proposed for future development:
 
    - Leverage compiler optimizations and transpilation strategies tailored to specific quantum hardware.
 
-- Incorporate error mitigation where required.
+- Incorporate error mitigation as required.
 
 - Enhance Data Generation and Analysis.
 
