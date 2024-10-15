@@ -176,7 +176,7 @@ print(stats)
 ```
 *Output:*
 
-![Image2](media/example_stats.png)
+<img src="media/example_stats.png" width="300"/>
 
 ```python
 analysis.pair_plots()
@@ -193,7 +193,7 @@ analysis.plot_correlation_heatmap()
 ```
 *Output:*
 
-<img src="media/full_correlation_heatmap.png" width="300"/>
+<img src="media/full_correlation_heatmap.png" width="400"/>
 
 ## Installation
 
