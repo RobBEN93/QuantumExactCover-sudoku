@@ -135,7 +135,7 @@ counts = backend.get_result(handle).get_counts()
 
 A small [demo](https://github.com/RobBEN93/QuantumExactCover-sudoku/blob/master/notebooks/IBMQBackendDEMO.ipynb) is included to test the solver on the IBM quantum backend.
 
-![Image2](media/BackendOutput.png)
+<img src="media/BackendOutput.png" width="400"/>
 
 ### Data Analysis
 
