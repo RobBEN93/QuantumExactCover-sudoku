@@ -110,7 +110,7 @@ circuit = sudoku.quantum.get_circuit()
 ```python
 sudoku.quantum.draw_circuit()
 ```
-
+<img src="media/example_circuit.jpeg" alt="description" width="300"/>
 ![Quantum-Circuit](media/example_circuit.jpeg)
 
 The circuit is a `pytket` `Circuit` object, so we can use `pytket`'s methods to select a backend, for example, a simulator:
