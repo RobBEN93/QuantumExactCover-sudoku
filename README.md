@@ -32,17 +32,17 @@ Additionally some features for data analysis are included for generating and exa
 
 ## Features
 
-### Sudoku Puzzles
+#### Sudoku Puzzles
 - Random puzzle generation with adjustable number of missing cells through [`sudoku-py`](https://pypi.org/project/sudoku-py/)
 
-### Quantum Resource Estimation and Circuit Construction
+#### Quantum Resource Estimation and Circuit Construction
 - Given a sudoku puzzle we can build the quantum circuit to solve it.
 - We can find the circuit's expected number of qubits, number of multi-controlled-X gates and total number of gates. (Logical resources)
 
-### Solution on a Backend or a Simulator
+#### Solution on a Backend or a Simulator
 - Given the problem size we can transpile the circuit and execute it through a simulator or QPU backend. However, due to the current limitations of quantum hardware, solving even small-sized puzzles remains challenging.
 
-### Data Generation, Analysis & Visualization
+#### Data Generation, Analysis & Visualization
 - Generate data for any number of puzzles to collect metrics on quantum resources.
 - Graphical representation of data analysis results.
 
