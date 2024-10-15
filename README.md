@@ -310,7 +310,7 @@ We then take $U$ as the union of these constraints. **Notice that covering all o
 
 For setting up the subsets to cover $U$, we provide two different encodings:
 
-- *Simple encoding* each set corresponds to filling one cell with each possible digit and include all compatible constraints
+- **Simple encoding.** Each set corresponds to filling one cell with each possible digit and include all compatible constraints.
 
       'S_0': [(1, 4), ('row', 1, 2), ('col', 4, 2), ('box', 2, 2)]
 
@@ -322,7 +322,7 @@ For setting up the subsets to cover $U$, we provide two different encodings:
       
       'S_4': [(4, 3), ('row', 4, 2), ('col', 3, 2), ('box', 4, 2)]
 
-- *Pattern encoding* sets up all same-digit compatible constraints into each set
+- **Pattern encoding.** Sets up all same-digit compatible constraints into each set
 
       'S_0': [(3, 0), ('row', 3, 1), ('col', 0, 1), ('box', 2, 0, 1)],
 
