@@ -138,6 +138,7 @@ A small [demo](https://github.com/RobBEN93/QuantumExactCover-sudoku/blob/master/
 <div style="text-align: center;">
 <img src="media/BackendOutput.png" width="400"/>
 </div>
+
 ### Data Analysis
 
 For generating perspective and future benchmarking, some data generation and analysis capabilities are included.
