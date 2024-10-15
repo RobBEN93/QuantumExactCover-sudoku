@@ -110,8 +110,7 @@ circuit = sudoku.quantum.get_circuit()
 ```python
 sudoku.quantum.draw_circuit()
 ```
-<img src="media/example_circuit.jpeg" alt="description" width="300"/>
-![Quantum-Circuit](media/example_circuit.jpeg)
+<img src="media/example_circuit.jpeg"/>
 
 The circuit is a `pytket` `Circuit` object, so we can use `pytket`'s methods to select a backend, for example, a simulator:
 
@@ -183,17 +182,18 @@ print(stats)
 analysis.pair_plots()
 ```
 *Output:*
-![Image](media/pair_plots_simple_encoding.png)
 
-![Image](media/pair_plots_pattern_encoding.png)
+<img src="media/pair_plots_simple_encoding.png" width="300"/>
+
+
+<img src="media/pair_plots_pattern_encoding.png" width="300"/>
 
 ```python
 analysis.plot_correlation_heatmap()
 ```
 *Output:*
 
-![Image3](media/full_correlation_heatmap.png)
-
+<img src="media/full_correlation_heatmap.png" width="300"/>
 
 ## Installation
 
