@@ -249,23 +249,17 @@ $$
 
 For example, consider the problem:
 
-$$
-    U = \{ \textbf{A}, \textbf{B}, \textbf{C} \}
-$$
-
-$$
-    S = \{ S_0 = \{\textbf{A}\}, S_1 = \{\textbf{B}\}, S_2 = \{\textbf{C}\}, S_3 = \{\textbf{A},\textbf{C}\}, S_4 = \{\textbf{A},\textbf{B}\}\}
-$$
+<div style="text-align: center;">
+  <img src="media/problem.png" width="500" />
+</div>
 
 **In a nutshell, Jiang and Wang's algorithm works by counting the number of times an element from $U$ is contained in any combination of subsets from $S$, and extracts the combinations that contain each element from $U$ exactly once.**
 
-For example, we can verify that 
+From which we can find every solution
 
-$$
-S' =  \{ S_2 = \{\textbf{C}\}, S_4 = \{\textbf{A},\textbf{B}\} \}
-$$ 
-
-is such correct solution.
+<div style="text-align: center;">
+  <img src="media/solutions.png" width="300" />
+</div>
 
 In fact, the algorithms checks for all combination of $S_0,S_1,\dots,S_4$ in superposition. That is, **we check for all possibilities at the same time!**
 
