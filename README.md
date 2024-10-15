@@ -147,7 +147,7 @@ For generating perspective and future benchmarking, some data generation and ana
 from python_package.data_generation import GenData, QuantumDataAnalysis
 ```
 
-We can initialize a GenData object to generate any number of puzzles and then we generate metrics to a `pandas` DataFrame throug `generate_data`, for example:
+We can initialize a GenData object to generate any number of puzzles and then we generate metrics to a `pandas` DataFrame through `generate_data`, for example:
 
 ```python
 gen_data = GenData(grid_size=3, num_puzzles=100000)
