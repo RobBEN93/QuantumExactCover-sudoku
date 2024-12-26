@@ -221,7 +221,7 @@ analysis.plot_correlation_heatmap()
 - Clone the repository:
 
 ```bash
-git clone https://github.com/username/repository.git
+git clone https://github.com/RobBEN93/QuantumExactCover-sudoku.git
 ```
 
 - Install the dependencies:
