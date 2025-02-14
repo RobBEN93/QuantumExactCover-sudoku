@@ -2,7 +2,7 @@ from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
 from sudoku import Sudoku as pysudoku
 from sudoku_py import SudokuGenerator as sudokupy
-from python_package.quantum import ExactCoverQuantumSolver
+from sudoku_nisq.quantum import ExactCoverQuantumSolver
 import os
 import csv
 

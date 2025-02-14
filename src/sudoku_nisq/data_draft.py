@@ -22,8 +22,8 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from typing import Dict, Any, Optional
 
-from python_package.sudoku import Sudoku
-from python_package.quantum import ExactCoverQuantumSolver
+from sudoku_nisq.sudoku import Sudoku
+from sudoku_nisq.quantum import ExactCoverQuantumSolver
 
 # SQLAlchemy base class for model definition
 Base = declarative_base()

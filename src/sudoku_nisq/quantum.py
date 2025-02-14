@@ -3,7 +3,7 @@ import mpmath
 from copy import deepcopy
 from pytket import Circuit, Qubit, OpType
 
-from python_package.exact_cover_encoding import ExactCoverEncoding
+from sudoku_nisq.exact_cover_encoding import ExactCoverEncoding
 from pytket.circuit.display import render_circuit_jupyter as draw
 
 class ExactCoverQuantumSolver:

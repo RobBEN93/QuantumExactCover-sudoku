@@ -1,4 +1,4 @@
-from python_package.sudoku import Sudoku
+from sudoku_nisq.sudoku import Sudoku
 """    under maintenance   """
 class Preprocessing(Sudoku):
     def __init__(self):
