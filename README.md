@@ -55,7 +55,7 @@ Additionally some features for data analysis are included for generating and exa
 The `Sudoku` class is central to the program.
 
 ```python
-from python_package.Sudoku import Sudoku
+from sudoku_nisq.sudoku import Sudoku
 ```
 
  It allows you to:
@@ -144,7 +144,7 @@ A small [demo](https://github.com/RobBEN93/QuantumExactCover-sudoku/blob/master/
 For generating perspective and future benchmarking, some data generation and analysis capabilities are included.
 
 ```python
-from python_package.data_generation import GenData, QuantumDataAnalysis
+from sudoku_nisq.data_generation import GenData, QuantumDataAnalysis
 ```
 
 We can initialize a GenData object to generate any number of puzzles and then we generate metrics to a `pandas` DataFrame through `generate_data`, for example:
