@@ -196,8 +196,8 @@ class ExactCoverQuantumSolver:
         """
         # Check the number of qubits in the circuit
         num_qubits = self.main_circuit.n_qubits
-        if num_qubits > 20:
-            raise ValueError(f"Quantum resources exceed 20 qubits ({num_qubits} qubits used). Simulation aborted.")
+        if num_qubits > 30:
+            raise ValueError(f"Quantum resources exceed 30 qubits ({num_qubits} qubits used). Simulation aborted.")
         
         from pytket.extensions.qiskit import AerBackend
         from pytket.passes import FlattenRegisters
