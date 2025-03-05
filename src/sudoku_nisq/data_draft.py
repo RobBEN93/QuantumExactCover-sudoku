@@ -22,7 +22,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from typing import Dict, Any, Optional
 
-from sudoku_nisq.sudoku import Sudoku
+from sudoku_nisq.q_sudoku import Sudoku
 from sudoku_nisq.quantum import ExactCoverQuantumSolver
 
 # SQLAlchemy base class for model definition

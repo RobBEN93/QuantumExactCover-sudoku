@@ -3,11 +3,9 @@ import matplotlib.pyplot as plt
 from sudoku import Sudoku as pysudoku
 from sudoku_py import SudokuGenerator as sudokupy
 from sudoku_nisq.quantum import ExactCoverQuantumSolver
-import os
-import csv
 
 class Sudoku():
-    def __init__(self, grid_size=2, sudopy=True, num_missing_cells=6, pysudo=False, difficulty=0.4, seed=100, file_path='data/my_puzzle.csv'):
+    def __init__(self, board=[], grid_size=2, sudopy=True, num_missing_cells=6, pysudo=False, difficulty=0.4, seed=100, file_path='data/my_puzzle.csv'):
         self.grid_size = grid_size
         self.board_size = self.grid_size*self.grid_size
         self.total_cells = self.board_size * self.board_size
@@ -16,12 +14,15 @@ class Sudoku():
         self.file_path = file_path
         
         # Optionally use 
+        #   custom board as a matrix
         #   py-sudoku: allows to generate puzzles from a seed.
         #   sudoku-py: allows to generate puzzles by number of blank cells.
-        if pysudo is True:
+        if board:
+            self.puzzle = pysudoku(self.grid_size,self.grid_size,board=board)
+        elif pysudo is True:
             self.puzzle = pysudoku(self.grid_size,seed=seed).difficulty(self.difficulty)
             # print(self.puzzle.board)
-        if sudopy is True:
+        elif sudopy is True:
             puzzle = sudokupy(board_size=self.board_size)
             cells_to_remove = self.num_missing_cells
             puzzle.generate(cells_to_remove=cells_to_remove)

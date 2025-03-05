@@ -55,7 +55,7 @@ Additionally some features for data analysis are included for generating and exa
 The `Sudoku` class is central to the program.
 
 ```python
-from sudoku_nisq.sudoku import Sudoku
+from sudoku_nisq.q_sudoku import Sudoku
 ```
 
  It allows you to:
@@ -87,7 +87,7 @@ board = [
     [0, 0, 0, 0, 8, 0, 0, 7, 9]
 ]
 
-sudoku.custom_board(board)
+sudoku = Sudoku(board,grid_size=3)
 ```
 
 ### Quantum Computation

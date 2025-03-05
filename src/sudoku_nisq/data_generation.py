@@ -15,7 +15,7 @@ import plotly.graph_objects as go
 
 warnings.filterwarnings('ignore')
 
-from sudoku_nisq.sudoku import Sudoku
+from sudoku_nisq.q_sudoku import Sudoku
 from sudoku_nisq.quantum import ExactCoverQuantumSolver
 
 # Set up logging to a file
