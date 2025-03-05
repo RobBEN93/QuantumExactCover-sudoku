@@ -47,7 +47,7 @@ class ExactCoverQuantumSolver:
     solver.counts_plot()
     
     """
-    def __init__(self, sudoku = None, simple=True, pattern=False, num_solutions=1, universe = None, subsets = None):
+    def __init__(self, sudoku = None, num_solutions = None, simple=True, pattern=False, universe = None, subsets = None):
         """
         Initialize the ExactCoverQuantumSolver instance.
 
@@ -73,8 +73,12 @@ class ExactCoverQuantumSolver:
         if sudoku is None:
             self.universe = universe
             self.subsets = subsets
+        
+        if num_solutions is None:
+            self.num_solutions = sudoku.count_solutions()
+        else:
+            self.num_solutions = num_solutions
             
-        self.num_solutions = num_solutions
         self.u_size = len(self.universe)        # Total elements to cover
         self.s_size = len(subsets)              # Number of subsets
         self.b = math.ceil(math.log2(self.s_size))  # Qubits for counting
