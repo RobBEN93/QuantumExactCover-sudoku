@@ -41,11 +41,11 @@ class QuantumResources(Base):
     num_qubits_simple_encoding = Column(Integer)
     mcx_gates_simple_encoding = Column(Integer)
     total_gates_simple_encoding = Column(Integer)
-
     
     num_qubits_pattern_encoding = Column(Integer)
     mcx_gates_pattern_encoding = Column(Integer)
     total_gates_pattern_encoding = Column(Integer)
+    
 class GenData:
     """
     Class for generating Sudoku puzzles and estimating the quantum resources required for solving them.

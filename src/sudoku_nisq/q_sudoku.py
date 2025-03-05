@@ -32,7 +32,7 @@ class Sudoku():
 
         self.open_tuples = self.find_open_tuples()
         self.pre_tuples = self.find_preset_tuples()
-        self._init_quantum()
+        # self.init_quantum()
     
     def custom_board(self,board):
         self.puzzle.board = board
@@ -84,7 +84,7 @@ class Sudoku():
 
         return fig
     
-    def _init_quantum(self,simple=True,pattern=False):
+    def init_quantum(self,simple=True,pattern=False):
         self.quantum = ExactCoverQuantumSolver(self,simple=simple,pattern=pattern)
     
     def find_preset_tuples(self):
