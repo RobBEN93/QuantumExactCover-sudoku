@@ -39,13 +39,13 @@ class QuantumResources(Base):
     missing_cells = Column(Integer)
     
     num_qubits_simple_encoding = Column(Integer)
-    total_gates_simple_encoding = Column(Integer)
     mcx_gates_simple_encoding = Column(Integer)
+    total_gates_simple_encoding = Column(Integer)
+
     
     num_qubits_pattern_encoding = Column(Integer)
-    total_gates_pattern_encoding = Column(Integer)
     mcx_gates_pattern_encoding = Column(Integer)
-
+    total_gates_pattern_encoding = Column(Integer)
 class GenData:
     """
     Class for generating Sudoku puzzles and estimating the quantum resources required for solving them.
@@ -76,11 +76,11 @@ class GenData:
         """
         # Compute quantum resources for simple encoding
         circ = ExactCoverQuantumSolver(sudoku, simple=True, pattern=False)
-        sim_num_qubits, sim_total_gates, sim_mcx_gates = circ.find_resources()
+        sim_num_qubits, sim_mcx_gates, sim_total_gates  = circ.find_resources()
         # Compute quantum resources for pattern encoding
         circ = ExactCoverQuantumSolver(sudoku, simple=False, pattern=True)
-        pat_num_qubits, pat_total_gates, pat_mcx_gates = circ.find_resources()
-        return sim_num_qubits, sim_total_gates, sim_mcx_gates, pat_num_qubits, pat_total_gates, pat_mcx_gates
+        pat_num_qubits, pat_mcx_gates, pat_total_gates = circ.find_resources()
+        return sim_num_qubits, sim_mcx_gates, sim_total_gates, pat_num_qubits, pat_mcx_gates, pat_total_gates
 
     def generate_data(self, num_empty_cells: int = None, num_cells_range: tuple = (1, 8)) -> pd.DataFrame:
         """
@@ -128,11 +128,11 @@ class GenData:
             dtype = {
                 'missing_cells': Integer(),
                 'num_qubits_simple_encoding': Integer(),
-                'total_gates_simple_encoding': Integer(),
                 'mcx_gates_simple_encoding': Integer(),
+                'total_gates_simple_encoding': Integer(),
                 'num_qubits_pattern_encoding': Integer(),
-                'total_gates_pattern_encoding': Integer(),
                 'mcx_gates_pattern_encoding': Integer(),
+                'total_gates_pattern_encoding': Integer(),
             }
             # Insert data into the SQL table
             df.to_sql('quantum_resources', self.engine, if_exists='append', index=False, dtype=dtype, method='multi')
@@ -168,18 +168,18 @@ class GenData:
         - sudoku: A Sudoku instance representing the puzzle to be solved.
         """
         # Compute quantum resources for the given Sudoku puzzle using both encodings
-        sim_num_qubits, sim_total_gates, sim_mcx_gates, \
-        pat_num_qubits, pat_total_gates, pat_mcx_gates = self.find_quantum_resources(sudoku)
+        sim_num_qubits, sim_mcx_gates, sim_total_gates,  \
+        pat_num_qubits, pat_mcx_gates, pat_total_gates  = self.find_quantum_resources(sudoku)
         
         # Append the computed data to the data list
         self.data_list.append({
             'missing_cells': sudoku.num_missing_cells,
             'num_qubits_simple_encoding': sim_num_qubits,
-            'total_gates_simple_encoding': sim_total_gates,
             'mcx_gates_simple_encoding': sim_mcx_gates,
+            'total_gates_simple_encoding': sim_total_gates,
             'num_qubits_pattern_encoding': pat_num_qubits,
+            'mcx_gates_pattern_encoding': pat_mcx_gates,
             'total_gates_pattern_encoding': pat_total_gates,
-            'mcx_gates_pattern_encoding': pat_mcx_gates
         })
 
     def _create_table_if_not_exists(self) -> None:
@@ -224,8 +224,8 @@ class QuantumDataAnalysis:
         """
         pdf_filename = 'quantum_resource_distributions.pdf'
         metrics = [
-            'num_qubits_simple_encoding', 'total_gates_simple_encoding', 'mcx_gates_simple_encoding',
-            'num_qubits_pattern_encoding', 'total_gates_pattern_encoding', 'mcx_gates_pattern_encoding'
+            'num_qubits_simple_encoding', 'mcx_gates_simple_encoding', 'total_gates_simple_encoding',
+            'num_qubits_pattern_encoding', 'mcx_gates_pattern_encoding', 'total_gates_pattern_encoding'
         ]
         
         # Reduce the number of bins for histograms and set default plot settings
@@ -283,8 +283,8 @@ class QuantumDataAnalysis:
         Plot distributions of key quantum resource metrics and save them as image files.
         """
         metrics = [
-            'num_qubits_simple_encoding', 'total_gates_simple_encoding', 'mcx_gates_simple_encoding',
-            'num_qubits_pattern_encoding', 'total_gates_pattern_encoding', 'mcx_gates_pattern_encoding'
+            'num_qubits_simple_encoding', 'mcx_gates_simple_encoding', 'total_gates_simple_encoding', 
+            'num_qubits_pattern_encoding', 'mcx_gates_pattern_encoding', 'total_gates_pattern_encoding'
         ]
         for metric in metrics:
             # Plot the distribution of each metric
@@ -301,14 +301,15 @@ class QuantumDataAnalysis:
         # Define the metric groups for each encoding scheme
         simple_encoding_metrics = [
             'num_qubits_simple_encoding', 
+            'mcx_gates_simple_encoding',
             'total_gates_simple_encoding', 
-            'mcx_gates_simple_encoding'
         ]
         
         pattern_encoding_metrics = [
             'num_qubits_pattern_encoding', 
+            'mcx_gates_pattern_encoding',
             'total_gates_pattern_encoding', 
-            'mcx_gates_pattern_encoding'
+
         ]
         
         # Generate and save pair plot for Simple Encoding Metrics
@@ -346,14 +347,14 @@ class QuantumDataAnalysis:
         # Define the metric groups for each encoding scheme
         simple_encoding_metrics = [
             'num_qubits_simple_encoding', 
-            'total_gates_simple_encoding', 
-            'mcx_gates_simple_encoding'
+            'mcx_gates_simple_encoding',
+            'total_gates_simple_encoding'
         ]
         
         pattern_encoding_metrics = [
-            'num_qubits_pattern_encoding', 
-            'total_gates_pattern_encoding', 
-            'mcx_gates_pattern_encoding'
+            'num_qubits_pattern_encoding',
+            'mcx_gates_pattern_encoding',
+            'total_gates_pattern_encoding' 
         ]
         
         # Plot and save heatmap for Simple Encoding Metrics
@@ -390,7 +391,7 @@ class QuantumDataAnalysis:
         """
         from scipy.stats import ttest_ind
         # Loop through key metrics and perform t-tests between simple and pattern encodings
-        for column in ['num_qubits_simple_encoding', 'total_gates_simple_encoding', 'mcx_gates_simple_encoding']:
+        for column in ['num_qubits_simple_encoding', 'mcx_gates_simple_encoding', 'total_gates_simple_encoding']:
             pattern_column = column.replace('simple', 'pattern')
             t_stat, p_value = ttest_ind(self.df[column], self.df[pattern_column], equal_var=False, nan_policy='omit')
             logger.info(f"T-test for {column} vs {pattern_column}: t-statistic = {t_stat:.4f}, p-value = {p_value:.4f}")
