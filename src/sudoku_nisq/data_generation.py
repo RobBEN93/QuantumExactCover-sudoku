@@ -1,5 +1,3 @@
-
-import numpy as np
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
@@ -11,27 +9,51 @@ import logging
 from tqdm import tqdm
 from matplotlib.backends.backend_pdf import PdfPages
 import plotly.express as px
-import plotly.graph_objects as go
 
+# Suppress warnings to keep output clean
 warnings.filterwarnings('ignore')
+
+from qiskit_ibm_runtime import QiskitRuntimeService
+from pytket.extensions.qiskit import IBMQBackend
+
+QiskitRuntimeService.save_account(channel="ibm_quantum", token=ibm_token, overwrite=True)
 
 from sudoku_nisq.q_sudoku import Sudoku
 from sudoku_nisq.quantum import ExactCoverQuantumSolver
 
-# Set up logging to a file
+# ------------------------------------------------------------
+# Logging Setup
+# ------------------------------------------------------------
+# Configure logging to capture info and error messages in a log file.
 logging.basicConfig(
     filename='app.log',          # Log file name
-    filemode='a',                 # Append mode ('w' for overwrite)
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'  # Optional: Add timestamps
-    )
+    filemode='a',                # Append mode (use 'w' to overwrite on each run)
+    level=logging.INFO,          # Set the logging level to capture INFO and above
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'  # Log message format with timestamps
+)
 logger = logging.getLogger(__name__)
 
-# SQLAlchemy base class for model definition
+# ------------------------------------------------------------
+# SQLAlchemy Setup for Database Interaction
+# ------------------------------------------------------------
+# Create the base class for declarative class definitions.
 Base = declarative_base()
 
 # SQLAlchemy model for representing the 'quantum_resources' table in the database
 class QuantumResources(Base):
+    """
+    SQLAlchemy model representing the 'quantum_resources' table.
+    
+    Attributes:
+        id: Primary key of the record.
+        missing_cells: Number of empty cells in the Sudoku puzzle.
+        num_qubits_simple_encoding: Number of qubits required using the simple encoding.
+        mcx_gates_simple_encoding: Number of MCX gates required using the simple encoding.
+        total_gates_simple_encoding: Total number of gates required using the simple encoding.
+        num_qubits_pattern_encoding: Number of qubits required using the pattern encoding.
+        mcx_gates_pattern_encoding: Number of MCX gates required using the pattern encoding.
+        total_gates_pattern_encoding: Total number of gates required using the pattern encoding.
+    """
     __tablename__ = 'quantum_resources'
 
     id = Column(Integer, primary_key=True)
@@ -45,20 +67,31 @@ class QuantumResources(Base):
     num_qubits_pattern_encoding = Column(Integer)
     mcx_gates_pattern_encoding = Column(Integer)
     total_gates_pattern_encoding = Column(Integer)
-    
+
+# ------------------------------------------------------------
+# Data Generation Class
+# ------------------------------------------------------------
 class GenData:
     """
     Class for generating Sudoku puzzles and estimating the quantum resources required for solving them.
+
+    Attributes:
+        size: Grid size (e.g., 2 for a 4x4 Sudoku).
+        board_size: Total number of sub-grids (size * size).
+        num_puzzles: Total number of puzzles to generate.
+        db_url: Database connection string (optional).
+        total_cells: Total number of cells in the Sudoku board.
+        data_list: List that stores computed quantum resource data for each puzzle.
+        engine: SQLAlchemy engine for database operations (if db_url is provided).
     """
-    def __init__(self, grid_size: int = 2, num_puzzles: int = 1000, db_url: Optional[str] = None):
-        # Initialize grid size, number of puzzles, database URL, and other relevant attributes
+    def __init__(self, grid_size: int = 2, num_puzzles: int = 50, db_url: Optional[str] = None):
         self.size = grid_size
         self.board_size = grid_size * grid_size
         self.num_puzzles = num_puzzles
         self.db_url = db_url
         self.total_cells = self.board_size * self.board_size
         self.data_list: List[Dict[str, Any]] = []
-        # Create a database engine if a URL is provided
+        # If a database URL is provided, create an engine for database interactions.
         if db_url:
             self.engine = create_engine(self.db_url)
         else:
@@ -66,13 +99,43 @@ class GenData:
 
     def find_quantum_resources(self, sudoku: Sudoku):
         """
-        Compute quantum resources required for solving a Sudoku puzzle using simple and pattern encodings.
-        
+        Compute the quantum resources required for solving a given Sudoku puzzle.
+
+        The method calculates resources using two encoding schemes:
+            - Simple encoding
+            - Pattern encoding
+
         Parameters:
-        - sudoku: A Sudoku instance representing the puzzle to be solved.
-        
+            sudoku: A Sudoku instance representing the puzzle.
+
         Returns:
-        - A tuple containing quantum resource data for both encodings (simple and pattern).
+            A tuple containing:
+                sim_num_qubits, sim_mcx_gates, sim_total_gates,
+                pat_num_qubits, pat_mcx_gates, pat_total_gates
+        """
+        # Compute quantum resources for simple encoding
+        circ = ExactCoverQuantumSolver(sudoku, simple=True, pattern=False)
+        sim_num_qubits, sim_mcx_gates, sim_total_gates  = circ.find_resources()
+        # Compute quantum resources for pattern encoding
+        circ = ExactCoverQuantumSolver(sudoku, simple=False, pattern=True)
+        pat_num_qubits, pat_mcx_gates, pat_total_gates = circ.find_resources()
+        return sim_num_qubits, sim_mcx_gates, sim_total_gates, pat_num_qubits, pat_mcx_gates, pat_total_gates
+    
+    def find_transplied_resources(self, sudoku: Sudoku, backend: str = "ibm_brisbane"):
+        """
+        Compute the quantum resources required for solving a given Sudoku puzzle.
+
+        The method calculates transpiled resources for the two encoding schemes:
+            - Simple encoding
+            - Pattern encoding
+
+        Parameters:
+            sudoku: A Sudoku instance representing the puzzle.
+
+        Returns:
+            A tuple containing:
+                sim_num_qubits, sim_mcx_gates, sim_total_gates,
+                pat_num_qubits, pat_mcx_gates, pat_total_gates
         """
         # Compute quantum resources for simple encoding
         circ = ExactCoverQuantumSolver(sudoku, simple=True, pattern=False)
