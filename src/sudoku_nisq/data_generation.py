@@ -9,14 +9,11 @@ import logging
 from tqdm import tqdm
 from matplotlib.backends.backend_pdf import PdfPages
 import plotly.express as px
-
-# Suppress warnings to keep output clean
-warnings.filterwarnings('ignore')
-
 from qiskit_ibm_runtime import QiskitRuntimeService
 from pytket.extensions.qiskit import IBMQBackend
 
-QiskitRuntimeService.save_account(channel="ibm_quantum", token=ibm_token, overwrite=True)
+# Suppress warnings to keep output clean
+warnings.filterwarnings('ignore')
 
 from sudoku_nisq.q_sudoku import Sudoku
 from sudoku_nisq.quantum import ExactCoverQuantumSolver
@@ -121,29 +118,49 @@ class GenData:
         pat_num_qubits, pat_mcx_gates, pat_total_gates = circ.find_resources()
         return sim_num_qubits, sim_mcx_gates, sim_total_gates, pat_num_qubits, pat_mcx_gates, pat_total_gates
     
-    def find_transplied_resources(self, sudoku: Sudoku, backend: str = "ibm_brisbane"):
+    def init_ibm(self, ibm_token):
         """
-        Compute the quantum resources required for solving a given Sudoku puzzle.
+        Returns IBM backends available to your account
+        """
+        QiskitRuntimeService.save_account(channel="ibm_quantum", token=ibm_token, overwrite=True)
+        available_backend_list = IBMQBackend.available_devices()
+        return available_backend_list
+    
+    def find_transplied_resources(self, sudoku: Sudoku, backend: str = "ibm_brisbane", optimisation_levels: list =[0,1,2]):
+        """
+        Compute the quantum resources required for solving a given Sudoku puzzle,
+        for a specific backend. 
+        # Requires setting up IBM Token with QiskitRuntimeService.save_account(channel="ibm_quantum", token=ibm_token, overwrite=True)
 
-        The method calculates transpiled resources for the two encoding schemes:
-            - Simple encoding
-            - Pattern encoding
 
         Parameters:
             sudoku: A Sudoku instance representing the puzzle.
 
         Returns:
-            A tuple containing:
-                sim_num_qubits, sim_mcx_gates, sim_total_gates,
-                pat_num_qubits, pat_mcx_gates, pat_total_gates
+            
         """
+        
+        all_resources = {}
+        
         # Compute quantum resources for simple encoding
         circ = ExactCoverQuantumSolver(sudoku, simple=True, pattern=False)
         sim_num_qubits, sim_mcx_gates, sim_total_gates  = circ.find_resources()
+        all_resources["simple"] = (sim_num_qubits, sim_mcx_gates, sim_total_gates)
+        circ.flatten_reg()
+        sim_resources = circ.find_transp_resources(backend, optimisation_levels)
+        for level in optimisation_levels:
+            sim_tr_num_qubits, sim_tr_total_gates, sim_tr_depth = sim_resources[level]
+            all_resources[f"sim_tr_oplevel_{level}"] = (sim_tr_num_qubits, sim_tr_total_gates, sim_tr_depth)
         # Compute quantum resources for pattern encoding
         circ = ExactCoverQuantumSolver(sudoku, simple=False, pattern=True)
+        circ.flatten_reg()
         pat_num_qubits, pat_mcx_gates, pat_total_gates = circ.find_resources()
-        return sim_num_qubits, sim_mcx_gates, sim_total_gates, pat_num_qubits, pat_mcx_gates, pat_total_gates
+        all_resources["pattern"] = ((pat_num_qubits, pat_mcx_gates, pat_total_gates))
+        pat_resources = circ.find_transp_resources(backend, optimisation_levels)
+        for level in optimisation_levels:
+            patt_tr_num_qubits, patt_tr_total_gates, patt_tr_depth = pat_resources[level]
+            all_resources[f"pat_tr_oplevel_{level}"] = (patt_tr_num_qubits, patt_tr_total_gates, patt_tr_depth)
+        return dict
 
     def generate_data(self, num_empty_cells: int = None, num_cells_range: tuple = (1, 8)) -> pd.DataFrame:
         """

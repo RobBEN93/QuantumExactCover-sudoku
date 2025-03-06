@@ -5,7 +5,10 @@ from pytket import Circuit, Qubit, OpType
 
 from sudoku_nisq.exact_cover_encoding import ExactCoverEncoding
 from pytket.circuit.display import render_circuit_jupyter as draw
+from qiskit_ibm_runtime import QiskitRuntimeService
+from pytket.extensions.qiskit import IBMQBackend
 
+from pytket.passes import FlattenRegisters
 class ExactCoverQuantumSolver:
     """
     This module defines the ExactCoverQuantumSolver class, which constructs and simulates or
@@ -254,6 +257,45 @@ class ExactCoverQuantumSolver:
         plt.tight_layout()
         plt.show()
 
+    def init_ibm(self, ibm_token):
+        """
+        Returns IBM backends available to your account
+        """
+        QiskitRuntimeService.save_account(channel="ibm_quantum", token=ibm_token, overwrite=True)
+        available_backend_list = IBMQBackend.available_devices()
+        return available_backend_list
+    
+    def flatten_reg(self):
+        if self.main_circuit is None:
+            self.get_circuit()
+        else:
+            flatten = FlattenRegisters()
+            flatten.apply(self.main_circuit)
+            print("Flattened once")
+    
+    def set_backend(self,ibm_backend="ibm_brisbane"):
+        self.backend = IBMQBackend(ibm_backend)
+    
+    def ibm_transpile(self,ibm_backend=None,flatten=None,optimisation_level=0):
+        if flatten is not None:
+            self.flatten_reg()
+        if self.backend 
+        return self.backend.get_compiled_circuit(self.main_circuit, optimisation_level=optimisation_level)
+    
+    def find_transp_resources(self,ibm_backend,optimization_levels=[0,1,2]):
+        resources = []
+        for level in optimization_levels:
+            circ = self.ibm_transpile(ibm_backend,level)
+            resources.append([circ.n_qubits, circ.n_gates, circ.depth()])
+        return resources
+        
+    def ibm_handle(self,transpiled_circuit,n_shots=1024):
+        # Pending
+        if self.backend is None:
+            raise RuntimeError("Circuit must be transpiled through ibm_transpile method")
+        result_handle = self.backend.process_circuit(transpiled_circuit, n_shots=n_shots)
+        return result_handle  # Returns the handle for further processing
+            
     def _build_counter(self):
         """
         Constructs the counting circuit that counts the number of subsets covering each element.
@@ -371,6 +413,5 @@ class ExactCoverQuantumSolver:
         c_bits = self.main_circuit.add_c_register("c", self.s_size)
         for q in self.s_qubits:
             self.main_circuit.Measure(q, c_bits[q.index[0]])
-            
-            
+    
     
