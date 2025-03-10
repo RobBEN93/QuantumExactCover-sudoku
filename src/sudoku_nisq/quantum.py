@@ -86,7 +86,8 @@ class ExactCoverQuantumSolver:
         self.s_size = len(subsets)              # Number of subsets
         self.b = math.ceil(math.log2(self.s_size))  # Qubits for counting
         self.main_circuit = None
-
+        self.backend = None
+        
     def find_resources(self, num_iterations=None):
         if num_iterations is None:
             s_size = self.s_size
@@ -268,24 +269,30 @@ class ExactCoverQuantumSolver:
     def flatten_reg(self):
         if self.main_circuit is None:
             self.get_circuit()
-        else:
-            flatten = FlattenRegisters()
-            flatten.apply(self.main_circuit)
-            print("Flattened once")
+        flatten = FlattenRegisters()
+        flatten.apply(self.main_circuit)
+        print("Flattened once")
     
-    def set_backend(self,ibm_backend="ibm_brisbane"):
+    def set_ibm_backend(self,ibm_backend="ibm_brisbane"):
         self.backend = IBMQBackend(ibm_backend)
     
-    def ibm_transpile(self,ibm_backend=None,flatten=None,optimisation_level=0):
+    def ibm_transpile(self, ibm_backend=None, optimisation_level: int =0, flatten=None):
         if flatten is not None:
             self.flatten_reg()
-        if self.backend 
+        if self.backend is None:
+            if ibm_backend is None:
+                self.set_ibm_backend() # Use default backend
+            else:
+                self.set_ibm_backend(ibm_backend)
+                
         return self.backend.get_compiled_circuit(self.main_circuit, optimisation_level=optimisation_level)
     
-    def find_transp_resources(self,ibm_backend,optimization_levels=[0,1,2]):
+    def find_transp_resources(self,ibm_backend,optimisation_levels: list =[0,1,2],flatten=None):
         resources = []
-        for level in optimization_levels:
-            circ = self.ibm_transpile(ibm_backend,level)
+        if flatten is not None:
+            self.flatten_reg()
+        for level in optimisation_levels:
+            circ = self.ibm_transpile(ibm_backend=ibm_backend,optimisation_level=level)
             resources.append([circ.n_qubits, circ.n_gates, circ.depth()])
         return resources
         
@@ -329,8 +336,8 @@ class ExactCoverQuantumSolver:
             all_lists.append(q_list)
             j += 1
         
-        # We reverse the list because of the construction in the previous step leaves them in the 
-        # incorrect order
+        # We reverse the list because of the construction in the previous step leaves them in 
+        # reverse order
         reversed_lists = []
         for element in all_lists:
             reversed_element = element[::-1]
