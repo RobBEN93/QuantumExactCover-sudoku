@@ -17,6 +17,7 @@ class Sudoku():
         #   custom board as a matrix
         #   py-sudoku: allows to generate puzzles from a seed.
         #   sudoku-py: allows to generate puzzles by number of blank cells.
+        
         if board:
             self.puzzle = pysudoku(self.grid_size,self.grid_size,board=board)
         elif pysudo is True:

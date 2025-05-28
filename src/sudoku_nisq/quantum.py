@@ -61,6 +61,7 @@ class ExactCoverQuantumSolver:
         - num_solutions (int): The number of expected solutions.
         """
         if sudoku is not None:
+            print(sudoku)
             # Initialize encoding
             encoding = ExactCoverEncoding(sudoku)
             self.universe = encoding.universe
